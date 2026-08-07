@@ -64,7 +64,12 @@
       <section class="kd-table-card">
         <div class="kd-table-header">
           <h2><i class="fa-solid fa-list-check" style="color: #C21820;"></i> Created Invoices</h2>
-          <span class="kd-count-badge" id="recordsCount">0 Records</span>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span class="kd-count-badge" id="recordsCount">0 Records</span>
+            <button class="btn-kd btn-kd-outline btn-sm" id="btnDeleteAll" style="color: #e11d48; border-color: #fecdd3; background-color: #fff1f2;" title="Delete All Invoices">
+              <i class="fa-solid fa-trash-can"></i> Delete All
+            </button>
+          </div>
         </div>
         <div class="table-responsive">
           <table class="kd-data-table">

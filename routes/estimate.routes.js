@@ -264,6 +264,20 @@ router.put('/:id', async (req, res) => {
   }
 });
 
+// DELETE /api/estimates/delete-all - Delete all estimate/invoice records
+router.delete('/delete-all', async (req, res) => {
+  try {
+    if (isDbConnected()) {
+      await Estimate.deleteMany({});
+    }
+    memoryEstimates = [];
+    return res.status(200).json({ success: true, message: 'All invoices deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting all estimates:', error);
+    res.status(500).json({ success: false, message: 'Server error while deleting all invoices', error: error.message });
+  }
+});
+
 // DELETE /api/estimates/:id - Delete estimate
 router.delete('/:id', async (req, res) => {
   try {

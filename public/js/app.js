@@ -1128,6 +1128,51 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Event Listeners
   btnNewEstimate.addEventListener('click', () => openStudioView());
+
+  const btnDeleteAll = document.getElementById('btnDeleteAll');
+  if (btnDeleteAll) {
+    btnDeleteAll.addEventListener('click', async () => {
+      if (allEstimates.length === 0) {
+        alert('There are no invoice records to delete.');
+        return;
+      }
+
+      const count = allEstimates.length;
+      const firstConfirm = confirm(`⚠️ WARNING: Are you sure you want to delete ALL ${count} invoice record(s)?\n\nThis will permanently remove every single quotation/invoice from MongoDB. This action CANNOT be undone!`);
+
+      if (!firstConfirm) return;
+
+      const secondConfirm = prompt(`To confirm deletion of ALL ${count} records, please type DELETE below:`);
+      if (secondConfirm !== 'DELETE') {
+        alert('Deletion cancelled. Confirmation text did not match.');
+        return;
+      }
+
+      try {
+        btnDeleteAll.disabled = true;
+        btnDeleteAll.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Deleting...`;
+
+        const res = await fetch('/api/estimates/delete-all', { method: 'DELETE' });
+        const data = await res.json();
+
+        btnDeleteAll.disabled = false;
+        btnDeleteAll.innerHTML = `<i class="fa-solid fa-trash-can"></i> Delete All`;
+
+        if (data.success) {
+          allEstimates = [];
+          applyFiltersAndRender();
+          alert('All invoices have been permanently deleted.');
+        } else {
+          alert(`Failed to delete invoices: ${data.message}`);
+        }
+      } catch (err) {
+        btnDeleteAll.disabled = false;
+        btnDeleteAll.innerHTML = `<i class="fa-solid fa-trash-can"></i> Delete All`;
+        console.error('Delete all error:', err);
+        alert('Error deleting all invoices.');
+      }
+    });
+  }
   btnHeaderBack.addEventListener('click', showHistoryView);
   btnSaveDraft.addEventListener('click', () => saveEstimateFromStudio({ goBack: true }));
   
