@@ -1,6 +1,6 @@
 /**
  * ESTIMATE PRO - MAIN FRONTEND APP LOGIC
- * Exact 1:1 Mirror of kd_pannel export_helper_web.dart & estimate_generator_page.dart
+ * Exact 1:1 Mirror of KD Pannel EstimateGeneratorPage & export_helper_web.dart
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -9,43 +9,61 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentFilterStatus = 'all';
   let currentSearchQuery = '';
   let activeEditingId = null;
+  let activeCatalogTargetRowIdx = null;
 
-  // DOM Elements - Views & Header
+  // Sample Product Catalog Items matching KrishiKranti inventory
+  const sampleProducts = [
+    { title: 'Organic Bio-Fertilizer (Liquid)', vendor: 'KrishiKranti', size: '1 Liter', unit: 'liter', price: 650, gst: 18 },
+    { title: 'Organic Bio-Fertilizer (Liquid)', vendor: 'KrishiKranti', size: '5 Liters', unit: 'liter', price: 2950, gst: 18 },
+    { title: 'Neem Oil Organic Insecticide (10000 PPM)', vendor: 'KrishiKranti', size: '500 ml', unit: 'liter', price: 480, gst: 18 },
+    { title: 'Neem Oil Organic Insecticide (10000 PPM)', vendor: 'KrishiKranti', size: '1 Liter', unit: 'liter', price: 890, gst: 18 },
+    { title: 'Humic Acid 98% Potassium Humate', vendor: 'KrishiKranti', size: '1 Kg', unit: 'kg', price: 450, gst: 18 },
+    { title: 'Plant Growth Regulator (PGR Concentrate)', vendor: 'KrishiKranti', size: '250 ml', unit: 'liter', price: 720, gst: 18 },
+    { title: 'Micro-Nutrient Mixture (Chelated Zinc, Iron, Boron)', vendor: 'KrishiKranti', size: '1 Kg Bag', unit: 'bag', price: 380, gst: 18 },
+    { title: 'Premium Vermicompost (Organic Soil Enricher)', vendor: 'KrishiKranti', size: '50 Kg Bag', unit: 'bag', price: 600, gst: 5 },
+    { title: 'Bio NPK Complex Biofertilizer', vendor: 'KrishiKranti', size: '1 Liter', unit: 'liter', price: 750, gst: 18 },
+    { title: 'Soil Conditioner Granules', vendor: 'KrishiKranti', size: '10 Kg Bucket', unit: 'PCS', price: 1250, gst: 18 }
+  ];
+
+  // DOM Elements - Header & Views
   const mainHeader = document.getElementById('mainHeader');
-  const historyView = document.getElementById('historyView');
-  const studioView = document.getElementById('studioView');
+  const btnHeaderBack = document.getElementById('btnHeaderBack');
+  const headerTitle = document.getElementById('headerTitle');
+  const headerSubtitle = document.getElementById('headerSubtitle');
   const dbStatusText = document.getElementById('dbStatusText');
   const dbStatus = document.getElementById('dbStatus');
 
-  // Metric Elements
-  const metricTotalCount = document.getElementById('metricTotalCount');
-  const metricTotalValue = document.getElementById('metricTotalValue');
-  const metricDraftCount = document.getElementById('metricDraftCount');
-  const metricFinalCount = document.getElementById('metricFinalCount');
+  const historyView = document.getElementById('historyView');
+  const studioView = document.getElementById('studioView');
 
-  // Toolbar & Table Elements
+  // Toolbar & Table
   const searchInput = document.getElementById('searchInput');
   const btnClearSearch = document.getElementById('btnClearSearch');
-  const filterPills = document.querySelectorAll('.pill-btn');
+  const filterPills = document.querySelectorAll('.kd-pill');
   const estimatesTableBody = document.getElementById('estimatesTableBody');
   const recordsCount = document.getElementById('recordsCount');
 
-  // Buttons & Controls
+  // Actions
   const btnNewEstimate = document.getElementById('btnNewEstimate');
-  const btnBackToHistory = document.getElementById('btnBackToHistory');
+  const studioHeaderActions = document.getElementById('studioHeaderActions');
   const btnSaveDraft = document.getElementById('btnSaveDraft');
   const btnPrintStudio = document.getElementById('btnPrintStudio');
-  const studioTitle = document.getElementById('studioTitle');
+
+  // Studio Form & Preview
+  const studioForm = document.getElementById('studioForm');
   const estimateIdInput = document.getElementById('estimateId');
   const isGstEnabledCheckbox = document.getElementById('isGstEnabled');
-
-  // Form Fields
-  const studioForm = document.getElementById('studioForm');
   const itemsTableBody = document.getElementById('itemsTableBody');
   const btnAddItem = document.getElementById('btnAddItem');
   const livePreviewContainer = document.getElementById('livePreviewContainer');
 
-  // Exact Currency Formatter from export_helper_web.dart
+  // Catalog Modal
+  const catalogModal = document.getElementById('catalogModal');
+  const btnCloseCatalogModal = document.getElementById('btnCloseCatalogModal');
+  const catalogSearchInput = document.getElementById('catalogSearchInput');
+  const catalogListContainer = document.getElementById('catalogListContainer');
+
+  // Currency Formatter from export_helper_web.dart
   function formatCurrency(value) {
     if (value === undefined || value === null || isNaN(value)) return '₹ 0.00';
     const stringValue = Number(value).toFixed(2);
@@ -74,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return '₹ ' + formattedRemaining + ',' + lastThree + '.' + decimalPart;
   }
 
-  // Exact Number to Words from export_helper_web.dart
+  // Number to Words from export_helper_web.dart
   function numberToWords(amount) {
     if (!amount || amount === 0) return 'Zero Rupees only';
 
@@ -127,7 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return (words ? words + ' Rupees' : '') + paiseStr + ' only';
   }
 
-  // 1. Health Check & Server Status
+  // 1. Health Check
   async function checkHealth() {
     try {
       const res = await fetch('/api/health');
@@ -137,17 +155,17 @@ document.addEventListener('DOMContentLoaded', () => {
           dbStatusText.textContent = 'MongoDB Connected';
           dbStatus.classList.remove('disconnected');
         } else {
-          dbStatusText.textContent = 'DB Disconnected (Fallback)';
+          dbStatusText.textContent = 'DB Disconnected';
           dbStatus.classList.add('disconnected');
         }
       }
     } catch (err) {
-      dbStatusText.textContent = 'Server Offline';
+      dbStatusText.textContent = 'Offline';
       dbStatus.classList.add('disconnected');
     }
   }
 
-  // 2. Fetch Estimates from API
+  // 2. Fetch Estimates History
   async function loadEstimates() {
     try {
       let url = `/api/estimates?status=${currentFilterStatus}`;
@@ -160,7 +178,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (data.success) {
         estimates = data.estimates || [];
-        updateMetrics(data.stats);
         renderTable(estimates);
       } else {
         showTableError(data.message || 'Failed to load estimates');
@@ -171,23 +188,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function updateMetrics(stats) {
-    if (!stats) return;
-    metricTotalCount.textContent = stats.totalCount || 0;
-    metricTotalValue.textContent = formatCurrency(stats.totalValue || 0);
-    metricDraftCount.textContent = stats.draftCount || 0;
-    metricFinalCount.textContent = stats.finalizedCount || 0;
-  }
-
   function renderTable(dataList) {
-    recordsCount.textContent = `Showing ${dataList.length} record${dataList.length === 1 ? '' : 's'}`;
+    recordsCount.textContent = `${dataList.length} Record${dataList.length === 1 ? '' : 's'}`;
 
     if (dataList.length === 0) {
       estimatesTableBody.innerHTML = `
         <tr>
-          <td colspan="8" class="text-center py-4" style="color: var(--text-muted);">
-            <i class="fa-solid fa-folder-open" style="font-size: 32px; margin-bottom: 8px; display: block;"></i>
-            No estimates found. Click "Create Estimate" above to make your first estimate.
+          <td colspan="8" class="text-center py-5" style="color: var(--kd-text-muted);">
+            <i class="fa-solid fa-folder-open" style="font-size: 32px; margin-bottom: 8px; display: block; color: #cbd5e1;"></i>
+            No estimates found. Click "Create Estimate" above to start a new quotation.
           </td>
         </tr>
       `;
@@ -207,9 +216,9 @@ document.addEventListener('DOMContentLoaded', () => {
           <td><span class="estimate-no-badge">${est.estimateNo}</span></td>
           <td>${dateStr}</td>
           <td><strong>${est.clientName}</strong></td>
-          <td>${est.companyName || 'KRISHIKRANTI'}</td>
+          <td>${est.clientPhone || '-'}</td>
           <td>${est.totalQty || 0}</td>
-          <td><strong style="color: var(--accent-emerald);">${formatCurrency(est.grandTotal)}</strong></td>
+          <td><strong style="color: var(--kd-primary-red);">${formatCurrency(est.grandTotal)}</strong></td>
           <td>
             <span class="status-badge ${statusClass}">
               <i class="fa-solid ${statusIcon}"></i> ${est.status}
@@ -217,13 +226,10 @@ document.addEventListener('DOMContentLoaded', () => {
           </td>
           <td class="text-right">
             <div class="action-btns">
-              <button class="btn btn-icon-only btn-view" title="Open Studio Preview" onclick="editEstimate('${est._id}')">
-                <i class="fa-solid fa-eye"></i>
-              </button>
-              <button class="btn btn-icon-only btn-edit" title="Edit in Studio" onclick="editEstimate('${est._id}')">
+              <button class="btn-action-icon edit" title="Edit Quotation" onclick="editEstimate('${est._id}')">
                 <i class="fa-solid fa-pen-to-square"></i>
               </button>
-              <button class="btn btn-icon-only btn-delete" title="Delete Estimate" onclick="deleteEstimate('${est._id}')">
+              <button class="btn-action-icon delete" title="Delete Estimate" onclick="deleteEstimate('${est._id}')">
                 <i class="fa-solid fa-trash-can"></i>
               </button>
             </div>
@@ -236,7 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function showTableError(msg) {
     estimatesTableBody.innerHTML = `
       <tr>
-        <td colspan="8" class="text-center py-4" style="color: var(--accent-rose);">
+        <td colspan="8" class="text-center py-5" style="color: #e11d48;">
           <i class="fa-solid fa-triangle-exclamation" style="font-size: 28px; margin-bottom: 8px; display: block;"></i>
           ${msg}
         </td>
@@ -244,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
   }
 
-  // 3. Dynamic Item Row Addition
+  // 3. Item Row Generator with "Browse Catalog"
   function addItemRow(item = {}) {
     const tr = document.createElement('tr');
     tr.className = 'item-row';
@@ -254,12 +260,13 @@ document.addEventListener('DOMContentLoaded', () => {
     tr.innerHTML = `
       <td>
         <input type="text" class="item-name" placeholder="Product / Service Name" value="${item.name || ''}" required />
+        <button type="button" class="btn-browse-catalog"><i class="fa-solid fa-book-open"></i> Browse Catalog</button>
       </td>
       <td>
         <input type="number" class="item-qty" min="1" step="any" placeholder="1" value="${item.quantity || 1}" required />
       </td>
       <td>
-        <input type="text" class="item-unit" placeholder="liter / kg / PCS" value="${item.unit || 'liter'}" />
+        <input type="text" class="item-unit" placeholder="liter / kg" value="${item.unit || 'liter'}" />
       </td>
       <td>
         <input type="number" class="item-price" min="0" step="any" placeholder="0.00" value="${item.price || ''}" required />
@@ -271,7 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <input type="number" class="item-amount" placeholder="0.00" value="${item.amount || ''}" readonly />
       </td>
       <td class="text-center">
-        <button type="button" class="btn-remove-row" title="Remove Item"><i class="fa-solid fa-trash"></i></button>
+        <button type="button" class="btn-remove-item" title="Remove Item"><i class="fa-solid fa-trash"></i></button>
       </td>
     `;
 
@@ -283,12 +290,16 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    tr.querySelector('.btn-remove-row').addEventListener('click', () => {
+    tr.querySelector('.btn-browse-catalog').addEventListener('click', () => {
+      openCatalogModal(tr);
+    });
+
+    tr.querySelector('.btn-remove-item').addEventListener('click', () => {
       if (itemsTableBody.children.length > 1) {
         tr.remove();
         updateLivePreview();
       } else {
-        alert('Estimate must contain at least one line item.');
+        alert('Quotation must contain at least one item.');
       }
     });
 
@@ -310,7 +321,58 @@ document.addEventListener('DOMContentLoaded', () => {
     row.querySelector('.item-amount').value = totalAmount.toFixed(2);
   }
 
-  // 4. Exact 1:1 Live Preview Renderer matching export_helper_web.dart
+  // Catalog Product Modal Selector
+  function openCatalogModal(rowTr) {
+    activeCatalogTargetRowIdx = rowTr;
+    renderCatalogList('');
+    catalogSearchInput.value = '';
+    catalogModal.style.display = 'flex';
+    catalogSearchInput.focus();
+  }
+
+  function renderCatalogList(query) {
+    const filtered = sampleProducts.filter(p => {
+      const q = query.toLowerCase();
+      return p.title.toLowerCase().includes(q) || p.size.toLowerCase().includes(q) || p.unit.toLowerCase().includes(q);
+    });
+
+    if (filtered.length === 0) {
+      catalogListContainer.innerHTML = `<p class="text-center py-4" style="color: var(--kd-text-muted);">No products found matching "${query}"</p>`;
+      return;
+    }
+
+    catalogListContainer.innerHTML = filtered.map(p => `
+      <div class="kd-catalog-item" onclick="selectCatalogProduct('${p.title} (${p.size})', ${p.price}, '${p.unit}', ${p.gst})">
+        <div>
+          <h5>${p.title}</h5>
+          <p>${p.vendor} • Size: <strong>${p.size}</strong></p>
+        </div>
+        <div class="price-badge">₹ ${p.price}</div>
+      </div>
+    `).join('');
+  }
+
+  window.selectCatalogProduct = function(title, price, unit, gst) {
+    if (activeCatalogTargetRowIdx) {
+      activeCatalogTargetRowIdx.querySelector('.item-name').value = title;
+      activeCatalogTargetRowIdx.querySelector('.item-price').value = price;
+      activeCatalogTargetRowIdx.querySelector('.item-unit').value = unit;
+      activeCatalogTargetRowIdx.querySelector('.item-gst').value = gst;
+      updateRowAmount(activeCatalogTargetRowIdx);
+      updateLivePreview();
+    }
+    catalogModal.style.display = 'none';
+  };
+
+  catalogSearchInput.addEventListener('input', (e) => {
+    renderCatalogList(e.target.value);
+  });
+
+  btnCloseCatalogModal.addEventListener('click', () => {
+    catalogModal.style.display = 'none';
+  });
+
+  // 4. Real-time Live Document Preview (1:1 with export_helper_web.dart)
   function updateLivePreview() {
     const isGstOn = isGstEnabledCheckbox ? isGstEnabledCheckbox.checked : true;
 
@@ -324,8 +386,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const estimateNo = document.getElementById('estimateNo').value.trim() || 'EBS/25-26/EST/02689';
     const date = document.getElementById('estimateDate').value || new Date().toLocaleDateString('en-GB');
 
-    const clientName = document.getElementById('clientName').value.trim() || 'Customer Name (Type in left panel)';
-    const clientPhone = document.getElementById('clientPhone').value.trim() || '-';
+    const clientName = document.getElementById('clientName').value.trim() || 'Abraham Ali';
+    const clientPhone = document.getElementById('clientPhone').value.trim() || '9933617561';
     const clientAddress = document.getElementById('clientAddress').value.trim() || 'Customer Address';
 
     let baseSubtotal = 0.0;
@@ -878,12 +940,11 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
   }
 
-  // Attach real-time input listeners to form fields
+  // Attach real-time input listeners to all form fields
   const formInputIds = [
     'clientName', 'clientPhone', 'clientAddress',
     'estimateNo', 'estimateDate', 'status', 'isGstEnabled',
-    'companyName', 'companyGst', 'companyState', 'companyPhone', 'companyEmail', 'companyAddress',
-    'estimateNotes'
+    'companyName', 'companyGst', 'companyState', 'companyPhone', 'companyEmail', 'companyAddress'
   ];
 
   formInputIds.forEach(id => {
@@ -894,14 +955,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // 5. Open Studio Editor View
+  // 5. Open Studio View
   function openStudioView(estimateData = null) {
     activeEditingId = estimateData ? estimateData._id : null;
     estimateIdInput.value = activeEditingId || '';
     itemsTableBody.innerHTML = '';
 
     if (estimateData) {
-      studioTitle.textContent = `Edit Estimate (${estimateData.estimateNo})`;
+      headerTitle.textContent = 'Estimate Generator';
+      headerSubtitle.textContent = 'Design custom quotations, view live preview & download PDF';
+      btnHeaderBack.style.display = 'flex';
+      btnNewEstimate.style.display = 'none';
+      studioHeaderActions.style.display = 'flex';
+
       document.getElementById('estimateNo').value = estimateData.estimateNo || '';
       document.getElementById('estimateDate').value = estimateData.estimateDate || new Date().toISOString().split('T')[0];
       document.getElementById('status').value = estimateData.status || 'draft';
@@ -919,7 +985,6 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('clientName').value = estimateData.clientName || '';
       document.getElementById('clientPhone').value = estimateData.clientPhone || '';
       document.getElementById('clientAddress').value = estimateData.clientAddress || '';
-      document.getElementById('estimateNotes').value = estimateData.notes || 'Quotations valid for 15 days.';
 
       if (estimateData.items && estimateData.items.length > 0) {
         estimateData.items.forEach(item => addItemRow(item));
@@ -927,8 +992,17 @@ document.addEventListener('DOMContentLoaded', () => {
         addItemRow();
       }
     } else {
-      studioTitle.textContent = 'Create New Estimate';
+      headerTitle.textContent = 'Estimate Generator';
+      headerSubtitle.textContent = 'Design custom quotations, view live preview & download PDF';
+      btnHeaderBack.style.display = 'flex';
+      btnNewEstimate.style.display = 'none';
+      studioHeaderActions.style.display = 'flex';
+
       studioForm.reset();
+      
+      // Generate auto estimate number e.g. EBS/25-26/EST/02689
+      const randomNo = Math.floor(1000 + Math.random() * 9000);
+      document.getElementById('estimateNo').value = `EBS/25-26/EST/0${randomNo}`;
       document.getElementById('estimateDate').value = new Date().toISOString().split('T')[0];
       if (isGstEnabledCheckbox) isGstEnabledCheckbox.checked = true;
 
@@ -938,32 +1012,34 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('companyPhone').value = '9399022060';
       document.getElementById('companyEmail').value = 'krishikrantiorganics@gmail.com';
       document.getElementById('companyAddress').value = 'EWS - 101, The Bellaire Appartment, Gondermau Gandhi Nagar, Bhopal 462036, Madhya Pradesh';
-      document.getElementById('estimateNotes').value = 'Quotations valid for 15 days.';
       
       addItemRow();
     }
 
-    // Switch View
-    mainHeader.style.display = 'none';
     historyView.style.display = 'none';
-    studioView.style.display = 'flex';
+    studioView.style.display = 'block';
 
     updateLivePreview();
   }
 
   function showHistoryView() {
+    headerTitle.textContent = 'Estimate History';
+    headerSubtitle.textContent = 'Manage and edit created quotation estimates';
+    btnHeaderBack.style.display = 'none';
+    btnNewEstimate.style.display = 'inline-flex';
+    studioHeaderActions.style.display = 'none';
+
     studioView.style.display = 'none';
-    mainHeader.style.display = 'flex';
     historyView.style.display = 'block';
     activeEditingId = null;
     loadEstimates();
   }
 
-  // 6. Save Estimate Handler (API call)
+  // 6. Save Estimate
   async function saveEstimateFromStudio() {
     const clientNameVal = document.getElementById('clientName').value.trim();
     if (!clientNameVal) {
-      alert('Please enter customer name.');
+      alert('Please enter customer name');
       document.getElementById('clientName').focus();
       return;
     }
@@ -987,7 +1063,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     if (items.length === 0) {
-      alert('Please add at least one line item with description.');
+      alert('Please enter at least one line item with a name.');
       return;
     }
 
@@ -1005,8 +1081,7 @@ document.addEventListener('DOMContentLoaded', () => {
       clientName: clientNameVal,
       clientPhone: document.getElementById('clientPhone').value.trim(),
       clientAddress: document.getElementById('clientAddress').value.trim(),
-      items: items,
-      notes: document.getElementById('estimateNotes').value.trim()
+      items: items
     };
 
     try {
@@ -1025,7 +1100,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const data = await res.json();
       btnSaveDraft.disabled = false;
-      btnSaveDraft.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Save Estimate`;
+      btnSaveDraft.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Save Draft`;
 
       if (data.success) {
         showHistoryView();
@@ -1034,9 +1109,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } catch (err) {
       btnSaveDraft.disabled = false;
-      btnSaveDraft.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Save Estimate`;
+      btnSaveDraft.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Save Draft`;
       console.error('Error submitting form:', err);
-      alert('Failed to connect to server when saving estimate.');
+      alert('Failed to save estimate.');
     }
   }
 
@@ -1062,19 +1137,19 @@ document.addEventListener('DOMContentLoaded', () => {
         alert(`Failed to delete estimate: ${data.message}`);
       }
     } catch (err) {
-      alert('Failed to execute delete request.');
+      alert('Failed to delete estimate.');
     }
   };
 
   // Event Listeners
   btnNewEstimate.addEventListener('click', () => openStudioView());
-  btnBackToHistory.addEventListener('click', showHistoryView);
+  btnHeaderBack.addEventListener('click', showHistoryView);
   btnSaveDraft.addEventListener('click', saveEstimateFromStudio);
+  
   btnPrintStudio.addEventListener('click', () => {
     const previewHtml = livePreviewContainer.innerHTML;
     const estNo = document.getElementById('estimateNo').value.trim() || 'Quotation';
-    
-    // Open dedicated print document window (exact export_helper_web.dart behavior)
+
     const printWin = window.open('', '_blank', 'width=950,height=1000');
     if (printWin) {
       printWin.document.write(`
@@ -1148,6 +1223,7 @@ document.addEventListener('DOMContentLoaded', () => {
       window.print();
     }
   });
+
   btnAddItem.addEventListener('click', () => addItemRow());
 
   // Search input debouncing

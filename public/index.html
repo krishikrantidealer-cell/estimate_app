@@ -3,102 +3,77 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Estimate Pro - Modern Quotation & Billing Studio</title>
-  <!-- Google Fonts & Font Awesome Icons -->
+  <title>Estimate Generator - KD Pannel Quotations</title>
+  <!-- Google Fonts: Outfit & Font Awesome Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-  <div class="app-container">
-    <!-- Main Header Navbar -->
-    <header class="app-header" id="mainHeader">
-      <div class="header-brand">
-        <div class="brand-icon">
-          <i class="fa-solid fa-file-invoice-dollar"></i>
-        </div>
-        <div class="brand-text">
-          <h1>Estimate<span>Pro</span></h1>
-          <p>Quotation & Billing Management System</p>
+  <div class="kd-app-wrapper">
+    <!-- Top Navigation Header (KD Pannel Style) -->
+    <header class="kd-header" id="mainHeader">
+      <div class="kd-header-left">
+        <button class="btn-icon-nav" id="btnHeaderBack" style="display: none;" title="Back to History">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <div class="kd-title-group">
+          <h1 id="headerTitle">Estimate History</h1>
+          <p id="headerSubtitle">Manage and edit created quotation estimates</p>
         </div>
       </div>
-      <div class="header-actions">
-        <div class="db-status-badge" id="dbStatus">
-          <span class="pulse-dot"></span> <span id="dbStatusText">Checking DB...</span>
+      <div class="kd-header-right">
+        <div class="db-status-pill" id="dbStatus">
+          <span class="status-dot"></span> <span id="dbStatusText">Connecting...</span>
         </div>
-        <button class="btn btn-primary" id="btnNewEstimate">
+        <!-- History Action -->
+        <button class="btn-kd btn-kd-red" id="btnNewEstimate">
           <i class="fa-solid fa-plus"></i> Create Estimate
         </button>
+        <!-- Studio Actions (Hidden in History mode) -->
+        <div class="studio-header-actions" id="studioHeaderActions" style="display: none;">
+          <button class="btn-kd btn-kd-outline" id="btnSaveDraft">
+            <i class="fa-solid fa-floppy-disk"></i> Save Draft
+          </button>
+          <button class="btn-kd btn-kd-red" id="btnPrintStudio">
+            <i class="fa-solid fa-download"></i> Download / Print
+          </button>
+        </div>
       </div>
     </header>
 
-    <!-- VIEW 1: History Dashboard -->
-    <main class="main-content" id="historyView">
-      <!-- Dashboard Metrics Cards -->
-      <section class="metrics-grid">
-        <div class="metric-card card-glass">
-          <div class="metric-icon total-icon"><i class="fa-solid fa-receipt"></i></div>
-          <div class="metric-info">
-            <span class="metric-label">Total Estimates</span>
-            <h3 class="metric-value" id="metricTotalCount">0</h3>
-          </div>
-        </div>
-        <div class="metric-card card-glass">
-          <div class="metric-icon value-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div>
-          <div class="metric-info">
-            <span class="metric-label">Total Portfolio Value</span>
-            <h3 class="metric-value" id="metricTotalValue">₹0.00</h3>
-          </div>
-        </div>
-        <div class="metric-card card-glass">
-          <div class="metric-icon draft-icon"><i class="fa-solid fa-pen-ruler"></i></div>
-          <div class="metric-info">
-            <span class="metric-label">Draft Estimates</span>
-            <h3 class="metric-value" id="metricDraftCount">0</h3>
-          </div>
-        </div>
-        <div class="metric-card card-glass">
-          <div class="metric-icon final-icon"><i class="fa-solid fa-circle-check"></i></div>
-          <div class="metric-info">
-            <span class="metric-label">Finalized Quotes</span>
-            <h3 class="metric-value" id="metricFinalCount">0</h3>
-          </div>
-        </div>
-      </section>
-
-      <!-- Control Toolbar: Search & Filters -->
-      <section class="toolbar-section card-glass">
-        <div class="search-box">
+    <!-- VIEW 1: Estimate History Listing -->
+    <main class="kd-main-content" id="historyView">
+      <!-- Search Toolbar -->
+      <section class="kd-search-card">
+        <div class="kd-search-inner">
           <i class="fa-solid fa-magnifying-glass search-icon"></i>
-          <input type="text" id="searchInput" placeholder="Search by Estimate No, Client, Company..." />
-          <button class="btn-clear" id="btnClearSearch"><i class="fa-solid fa-xmark"></i></button>
+          <input type="text" id="searchInput" placeholder="Search by Customer, Estimate No, or Phone..." />
+          <button class="btn-clear-search" id="btnClearSearch" style="display: none;"><i class="fa-solid fa-xmark"></i></button>
         </div>
-        <div class="filter-group">
-          <span class="filter-label"><i class="fa-solid fa-filter"></i> Status:</span>
-          <div class="filter-pills">
-            <button class="pill-btn active" data-status="all">All</button>
-            <button class="pill-btn" data-status="draft">Drafts</button>
-            <button class="pill-btn" data-status="finalized">Finalized</button>
-          </div>
+        <div class="kd-filter-pills">
+          <button class="kd-pill active" data-status="all">All Quotes</button>
+          <button class="kd-pill" data-status="draft">Drafts</button>
+          <button class="kd-pill" data-status="finalized">Finalized</button>
         </div>
       </section>
 
-      <!-- Estimates Table Listing -->
-      <section class="table-section card-glass">
-        <div class="table-header-title">
-          <h2><i class="fa-solid fa-list-check"></i> Estimates Records</h2>
-          <span class="records-count" id="recordsCount">Showing 0 records</span>
+      <!-- History Table / Cards -->
+      <section class="kd-table-card">
+        <div class="kd-table-header">
+          <h2><i class="fa-solid fa-list-check" style="color: #C21820;"></i> Created Quotations</h2>
+          <span class="kd-count-badge" id="recordsCount">0 Records</span>
         </div>
         <div class="table-responsive">
-          <table class="data-table" id="estimatesTable">
+          <table class="kd-data-table">
             <thead>
               <tr>
                 <th>Estimate No</th>
                 <th>Date</th>
-                <th>Client Name</th>
-                <th>Company</th>
+                <th>Customer Name</th>
+                <th>Phone</th>
                 <th>Items Qty</th>
                 <th>Grand Total</th>
                 <th>Status</th>
@@ -107,9 +82,9 @@
             </thead>
             <tbody id="estimatesTableBody">
               <tr>
-                <td colspan="8" class="text-center py-4">
-                  <div class="loading-spinner"></div>
-                  <p>Loading estimates from server...</p>
+                <td colspan="8" class="text-center py-5">
+                  <div class="kd-spinner"></div>
+                  <p style="margin-top: 10px; color: #64748b;">Loading estimates...</p>
                 </td>
               </tr>
             </tbody>
@@ -118,169 +93,143 @@
       </section>
     </main>
 
-    <!-- VIEW 2: Full-Screen Estimate Studio & Real-time Live Preview (Hidden by default) -->
-    <div class="studio-view" id="studioView" style="display: none;">
-      <!-- Studio Navigation Bar -->
-      <div class="studio-navbar card-glass">
-        <div class="navbar-left">
-          <button class="btn btn-light" id="btnBackToHistory">
-            <i class="fa-solid fa-arrow-left"></i> Back to History
-          </button>
-          <div class="studio-title-group">
-            <h2 id="studioTitle">Estimate Studio</h2>
-            <span class="badge-tag" id="studioSubtitle">Real-Time Interactive Editor</span>
-          </div>
-        </div>
-        <div class="navbar-right">
-          <button class="btn btn-secondary" id="btnSaveDraft">
-            <i class="fa-solid fa-floppy-disk"></i> Save Estimate
-          </button>
-          <button class="btn btn-primary" id="btnPrintStudio">
-            <i class="fa-solid fa-print"></i> Download / Print
-          </button>
-        </div>
-      </div>
-
-      <!-- Studio Split Screen Layout -->
-      <div class="studio-grid">
-        <!-- LEFT PANEL: Form Inputs -->
-        <div class="studio-editor-panel card-glass">
-          <form id="studioForm">
+    <!-- VIEW 2: Full-Screen Estimate Generator Studio (Split 4:5 View) -->
+    <div class="kd-studio-view" id="studioView" style="display: none;">
+      <div class="kd-studio-split">
+        <!-- LEFT COLUMN: Form Editor (Flex 4) -->
+        <div class="kd-editor-column">
+          <form id="studioForm" onsubmit="return false;">
             <input type="hidden" id="estimateId" value="" />
 
-            <!-- Section 1: Document Details -->
-            <div class="form-card-inner mb-4">
-              <h4 class="card-inner-title"><i class="fa-solid fa-sliders"></i> 1. Document Metadata</h4>
-              <div class="form-grid cols-2">
-                <div class="form-group">
+            <!-- 1. Estimate Metadata -->
+            <div class="kd-form-section">
+              <h3 class="kd-section-title"><i class="fa-solid fa-hashtag"></i> 1. Estimate Metadata</h3>
+              <div class="kd-form-grid cols-2">
+                <div class="kd-field">
                   <label for="estimateNo">Estimate Number</label>
-                  <input type="text" id="estimateNo" placeholder="Auto-generated (e.g. EBS/26-27/EST/1001)" />
-                  <small class="help-text">Leave blank to auto-generate</small>
+                  <input type="text" id="estimateNo" placeholder="e.g. EBS/25-26/EST/02689" />
                 </div>
-                <div class="form-group">
-                  <label for="estimateDate">Date *</label>
+                <div class="kd-field">
+                  <label for="estimateDate">Date (DD/MM/YYYY)</label>
                   <input type="date" id="estimateDate" required />
                 </div>
               </div>
-              <div class="form-grid cols-2 mt-3">
-                <div class="form-group">
-                  <label for="status">Document Status *</label>
-                  <select id="status" required>
-                    <option value="draft">Draft</option>
-                    <option value="finalized">Finalized</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label for="isGstEnabled">Enable GST (18%)</label>
-                  <div class="toggle-container" style="padding-top: 6px;">
-                    <label class="switch">
-                      <input type="checkbox" id="isGstEnabled" checked>
-                      <span class="slider round"></span>
-                    </label>
-                  </div>
-                </div>
-              </div>
             </div>
 
-            <!-- Section 2: Customer / Client Details -->
-            <div class="form-card-inner mb-4">
-              <h4 class="card-inner-title"><i class="fa-solid fa-user-tie"></i> 2. Customer / Client Info</h4>
-              <div class="form-group">
+            <!-- 2. Customer / Client Info -->
+            <div class="kd-form-section">
+              <h3 class="kd-section-title"><i class="fa-solid fa-user"></i> 2. Customer / Client Info</h3>
+              <div class="kd-field mb-3">
                 <label for="clientName">Customer Name *</label>
-                <input type="text" id="clientName" placeholder="e.g. GreenEarth Farms Ltd" required />
+                <input type="text" id="clientName" placeholder="e.g. Abraham Ali" required />
               </div>
-              <div class="form-grid cols-2 mt-3">
-                <div class="form-group">
-                  <label for="clientPhone">Phone Number</label>
-                  <input type="text" id="clientPhone" placeholder="+91 9826012345" />
-                </div>
-                <div class="form-group">
-                  <label for="clientAddress">Billing / Shipping Address</label>
-                  <textarea id="clientAddress" rows="2" placeholder="Full address details"></textarea>
-                </div>
+              <div class="kd-field mb-3">
+                <label for="clientAddress">Customer Address</label>
+                <textarea id="clientAddress" rows="2" placeholder="Full delivery / billing address"></textarea>
+              </div>
+              <div class="kd-field">
+                <label for="clientPhone">Customer Phone</label>
+                <input type="text" id="clientPhone" placeholder="e.g. 9933617561" />
               </div>
             </div>
 
-            <!-- Section 3: Company Metadata (Advanced Settings) -->
-            <details class="advanced-details mb-4">
-              <summary><i class="fa-solid fa-building"></i> 3. Company Details (Sender Corporate Defaults)</summary>
-              <div class="form-card-inner mt-2">
-                <div class="form-group">
-                  <label for="companyName">Company Name *</label>
-                  <input type="text" id="companyName" value="KRISHIKRANTI ORGANICS" required />
+            <!-- 3. Company Metadata (Advanced Collapsible) -->
+            <details class="kd-advanced-accordion">
+              <summary><i class="fa-solid fa-building"></i> 3. Company Metadata (Advanced Defaults)</summary>
+              <div class="kd-accordion-content">
+                <div class="kd-field mb-3">
+                  <label for="companyName">Company Name</label>
+                  <input type="text" id="companyName" value="KRISHIKRANTI ORGANICS" />
                 </div>
-                <div class="form-grid cols-2 mt-3">
-                  <div class="form-group">
+                <div class="kd-form-grid cols-2 mb-3">
+                  <div class="kd-field">
                     <label for="companyGst">GSTIN</label>
                     <input type="text" id="companyGst" value="23ABEFK9255G1Z9" />
                   </div>
-                  <div class="form-group">
+                  <div class="kd-field">
                     <label for="companyState">State Code</label>
                     <input type="text" id="companyState" value="23-Madhya Pradesh" />
                   </div>
                 </div>
-                <div class="form-grid cols-2 mt-3">
-                  <div class="form-group">
+                <div class="kd-form-grid cols-2 mb-3">
+                  <div class="kd-field">
                     <label for="companyPhone">Phone</label>
                     <input type="text" id="companyPhone" value="9399022060" />
                   </div>
-                  <div class="form-group">
+                  <div class="kd-field">
                     <label for="companyEmail">Email</label>
                     <input type="email" id="companyEmail" value="krishikrantiorganics@gmail.com" />
                   </div>
                 </div>
-                <div class="form-group mt-3">
+                <div class="kd-field">
                   <label for="companyAddress">Company Address</label>
                   <textarea id="companyAddress" rows="2">EWS - 101, The Bellaire Appartment, Gondermau Gandhi Nagar, Bhopal 462036, Madhya Pradesh</textarea>
                 </div>
               </div>
             </details>
 
-            <!-- Section 4: Line Items Table -->
-            <div class="form-card-inner mb-4">
-              <div class="items-header">
-                <h4 class="card-inner-title mb-0"><i class="fa-solid fa-boxes-stacked"></i> 4. Line Items</h4>
-                <button type="button" class="btn btn-secondary btn-sm" id="btnAddItem">
+            <!-- GST Application Toggle -->
+            <div class="kd-gst-card">
+              <div class="kd-gst-info">
+                <i class="fa-solid fa-receipt icon-gst"></i>
+                <div>
+                  <h4>GST Application</h4>
+                  <p>Toggle 18% GST calculation across all items</p>
+                </div>
+              </div>
+              <label class="kd-switch">
+                <input type="checkbox" id="isGstEnabled" checked>
+                <span class="kd-slider round"></span>
+              </label>
+            </div>
+
+            <!-- 4. Items Table Section -->
+            <div class="kd-form-section">
+              <div class="kd-items-header">
+                <h3 class="kd-section-title mb-0"><i class="fa-solid fa-boxes-stacked"></i> 4. Line Items</h3>
+                <button type="button" class="btn-kd btn-kd-outline btn-sm" id="btnAddItem">
                   <i class="fa-solid fa-plus"></i> Add Item Row
                 </button>
               </div>
 
               <div class="table-responsive mt-3">
-                <table class="items-table" id="itemsTable">
+                <table class="kd-items-table" id="itemsTable">
                   <thead>
                     <tr>
-                      <th style="width: 32%;">Item / Service Name *</th>
-                      <th style="width: 13%;">Qty *</th>
-                      <th style="width: 14%;">Unit</th>
+                      <th style="width: 34%;">Item Description *</th>
+                      <th style="width: 12%;">Qty *</th>
+                      <th style="width: 13%;">Unit</th>
                       <th style="width: 15%;">Rate (₹) *</th>
-                      <th style="width: 11%;">GST %</th>
-                      <th style="width: 15%;">Amount (₹)</th>
+                      <th style="width: 10%;">GST %</th>
+                      <th style="width: 16%;">Amount (₹)</th>
                       <th style="width: 5%;"></th>
                     </tr>
                   </thead>
                   <tbody id="itemsTableBody">
-                    <!-- Dynamic Item Rows -->
+                    <!-- Item Rows -->
                   </tbody>
                 </table>
               </div>
             </div>
 
-            <!-- Section 5: Terms & Calculation Summary -->
-            <div class="form-card-inner">
-              <h4 class="card-inner-title"><i class="fa-solid fa-file-contract"></i> 5. Terms & Summary</h4>
-              <div class="form-group">
-                <label for="estimateNotes">Terms & Conditions / Notes</label>
-                <textarea id="estimateNotes" rows="3">Quotations valid for 15 days.</textarea>
+            <!-- Status Selection -->
+            <div class="kd-form-section">
+              <div class="kd-field">
+                <label for="status">Document Status</label>
+                <select id="status">
+                  <option value="draft">Draft</option>
+                  <option value="finalized">Finalized</option>
+                </select>
               </div>
             </div>
           </form>
         </div>
 
-        <!-- RIGHT PANEL: Real-time Live Preview (A4 Paper View) -->
-        <div class="studio-preview-panel">
-          <div class="preview-paper-wrapper">
+        <!-- RIGHT COLUMN: A4 Scaled Visual Preview (Flex 5) -->
+        <div class="kd-preview-column">
+          <div class="kd-preview-paper-container">
             <div class="printable-area" id="livePreviewContainer">
-              <!-- Live preview HTML rendered here -->
+              <!-- Rendered Exact Quotation HTML -->
             </div>
           </div>
         </div>
@@ -288,7 +237,26 @@
     </div>
   </div>
 
-  <!-- App JavaScript -->
+  <!-- Product Inventory Modal -->
+  <div class="kd-modal-backdrop" id="catalogModal" style="display: none;">
+    <div class="kd-modal-dialog">
+      <div class="kd-modal-header">
+        <h3><i class="fa-solid fa-warehouse" style="color: #C21820;"></i> Select Product Catalog Item</h3>
+        <button class="btn-close-modal" id="btnCloseCatalogModal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="kd-modal-body">
+        <div class="kd-modal-search">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="catalogSearchInput" placeholder="Search product inventory by title, size, category..." />
+        </div>
+        <div class="kd-catalog-list" id="catalogListContainer">
+          <!-- Products populated dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- App Script -->
   <script src="js/app.js"></script>
 </body>
 </html>
