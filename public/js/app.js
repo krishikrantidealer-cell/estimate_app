@@ -547,7 +547,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .company-info-wave-exact {
           background-color: #1A2536;
           color: #ffffff;
-          padding: 85px 40px 14px 30px;
+          padding: 72px 30px 10px 30px;
           border-radius: 0 0 100px 0;
           margin-left: -30px;
           width: calc(55% + 30px);
@@ -558,17 +558,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         .company-info-wave-exact h1 {
-          margin: 0 0 4px 0;
-          font-size: 20px;
-          font-weight: 700;
+          margin: 0 0 2px 0;
+          font-size: 17px;
+          font-weight: 800;
           color: #ffffff;
+          line-height: 1.2;
         }
         
         .company-info-wave-exact p {
-          margin: 2px 0;
-          font-size: 11px;
-          color: #E2E8F0;
-          opacity: 0.9;
+          margin: 1px 0 !important;
+          font-size: 11px !important;
+          font-weight: 600 !important;
+          color: #ffffff !important;
+          opacity: 1 !important;
+          line-height: 1.3 !important;
         }
         
         .estimate-title-block-exact {
