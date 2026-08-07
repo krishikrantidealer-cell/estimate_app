@@ -547,7 +547,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .company-info-wave-exact {
           background-color: #1A2536;
           color: #ffffff;
-          padding: 72px 30px 10px 30px;
+          padding: 84px 30px 10px 30px;
           border-radius: 0 0 100px 0;
           margin-left: -30px;
           width: calc(55% + 30px);
