@@ -1,6 +1,6 @@
 /**
  * ESTIMATE PRO - MAIN FRONTEND APP LOGIC
- * Exact mirror of Flutter export_helper_web.dart & estimate_generator_page.dart
+ * Exact 1:1 Mirror of kd_pannel export_helper_web.dart & estimate_generator_page.dart
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnAddItem = document.getElementById('btnAddItem');
   const livePreviewContainer = document.getElementById('livePreviewContainer');
 
-  // Exact Currency Formatter from export_helper_web.dart (Indian Numbering System)
+  // Exact Currency Formatter from export_helper_web.dart
   function formatCurrency(value) {
     if (value === undefined || value === null || isNaN(value)) return '₹ 0.00';
     const stringValue = Number(value).toFixed(2);
@@ -310,7 +310,7 @@ document.addEventListener('DOMContentLoaded', () => {
     row.querySelector('.item-amount').value = totalAmount.toFixed(2);
   }
 
-  // 4. Exact HTML Generator matching export_helper_web.dart
+  // 4. Exact 1:1 Live Preview Renderer matching export_helper_web.dart
   function updateLivePreview() {
     const isGstOn = isGstEnabledCheckbox ? isGstEnabledCheckbox.checked : true;
 
@@ -360,13 +360,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
       return `
         <tr ${rowClass}>
-          <td class="center" style="text-align: center; padding: 12px 14px; border: 1px solid #E5E7EB;">${i + 1}</td>
-          <td class="bold" style="font-weight: 700; color: #111827; padding: 12px 14px; border: 1px solid #E5E7EB;">${name}</td>
-          <td class="center" style="text-align: center; padding: 12px 14px; border: 1px solid #E5E7EB;">${qty}</td>
-          <td class="center" style="text-align: center; padding: 12px 14px; border: 1px solid #E5E7EB;">${unit}</td>
-          <td class="num" style="text-align: right; padding: 12px 14px; border: 1px solid #E5E7EB;">${formatCurrency(price)}</td>
-          ${isGstOn ? `<td class="center" style="text-align: center; padding: 12px 14px; border: 1px solid #E5E7EB;">${gst.toFixed(0)}%</td>` : ''}
-          <td class="num" style="text-align: right; padding: 12px 14px; border: 1px solid #E5E7EB;">${formatCurrency(amt)}</td>
+          <td class="center">${i + 1}</td>
+          <td class="bold">${name}</td>
+          <td class="center">${qty}</td>
+          <td class="center">${unit}</td>
+          <td class="num">${formatCurrency(price)}</td>
+          ${isGstOn ? `<td class="center">${gst.toFixed(0)}%</td>` : ''}
+          <td class="num">${formatCurrency(amt)}</td>
         </tr>
       `;
     }).join('\n');
@@ -387,135 +387,493 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     livePreviewContainer.innerHTML = `
-      <div class="quotation-export-container" style="max-width: 900px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; padding: 30px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); background: #ffffff; color: #111827; position: relative; font-family: 'Plus Jakarta Sans', sans-serif;">
-        <!-- Top Red Header Banner -->
-        <div class="header-banner" style="background-color: #C21820; color: #ffffff; display: flex; align-items: stretch; height: 75px; position: absolute; top: 30px; right: 30px; width: 75%; border-radius: 0 4px 0 100px; z-index: 2; padding-left: 50px; box-sizing: border-box;">
-          <div class="contact-col" style="display: flex; align-items: center; padding: 12px 14px; flex-grow: 1;">
-            <div class="contact-item" style="display: flex; align-items: center; gap: 8px;">
-              <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; fill: #ffffff; flex-shrink: 0;"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
-              <span class="contact-text" style="font-size: 11px; font-weight: 500; line-height: 1.3;">${companyPhone}</span>
+      <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;800&display=swap');
+        
+        .quotation-container-exact {
+          font-family: 'Outfit', sans-serif;
+          margin: 0 auto;
+          padding: 30px;
+          color: #111827;
+          background-color: #fff;
+          max-width: 900px;
+          border: 1px solid #e5e7eb;
+          border-radius: 12px;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+          position: relative;
+          box-sizing: border-box;
+        }
+
+        .header-banner-exact {
+          background-color: #C21820;
+          color: #ffffff;
+          display: flex;
+          align-items: stretch;
+          height: 75px;
+          position: absolute;
+          top: 30px;
+          right: 30px;
+          width: 80%;
+          border-radius: 0 4px 0 100px;
+          z-index: 2;
+          padding-left: 50px;
+          box-sizing: border-box;
+        }
+        
+        .logo-box-exact {
+          position: absolute;
+          top: 15px;
+          left: 30px;
+          background-color: transparent;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0;
+          width: 110px;
+          height: 70px;
+          z-index: 10;
+        }
+        
+        .logo-img-exact {
+          max-height: 55px;
+          max-width: 100%;
+          object-fit: contain;
+        }
+        
+        .contact-col-exact {
+          display: flex;
+          align-items: center;
+          padding: 12px 18px;
+          flex-grow: 1;
+        }
+        
+        .contact-col-exact.border-left {
+          border-left: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        
+        .contact-item-exact {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        
+        .contact-icon-exact {
+          width: 16px;
+          height: 16px;
+          fill: #ffffff;
+          flex-shrink: 0;
+        }
+        
+        .contact-text-exact {
+          font-size: 11px;
+          font-weight: 500;
+          line-height: 1.3;
+        }
+        
+        .meta-section-exact {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 30px;
+          position: relative;
+          height: 150px;
+        }
+        
+        .company-info-wave-exact {
+          background-color: #1A2536;
+          color: #ffffff;
+          padding: 85px 50px 8px 30px;
+          border-radius: 0 0 100px 0;
+          margin-left: -30px;
+          width: 55%;
+          height: 100%;
+          box-sizing: border-box;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+          position: relative;
+        }
+        
+        .company-info-wave-exact h1 {
+          margin: 0 0 4px 0;
+          font-size: 20px;
+          font-weight: 700;
+          color: #ffffff;
+        }
+        
+        .company-info-wave-exact p {
+          margin: 2px 0;
+          font-size: 11px;
+          color: #E2E8F0;
+          opacity: 0.9;
+        }
+        
+        .estimate-title-block-exact {
+          text-align: left;
+        }
+        
+        .estimate-title-block-exact h2 {
+          margin: 0 0 10px 0;
+          font-size: 28px;
+          font-weight: 700;
+          color: #111827;
+          letter-spacing: -0.5px;
+        }
+        
+        .meta-details-table-exact {
+          border-collapse: collapse;
+          margin-left: 0;
+        }
+        
+        .meta-details-table-exact td {
+          padding: 4px 12px;
+          font-size: 13px;
+        }
+        
+        .meta-details-table-exact td.label {
+          font-weight: 700;
+          color: #374151;
+          padding-left: 0;
+          text-align: left;
+        }
+        
+        .meta-details-table-exact td.value {
+          font-weight: 700;
+          color: #111827;
+          text-align: left;
+        }
+        
+        .client-section-exact {
+          margin-bottom: 30px;
+          display: flex;
+          justify-content: space-between;
+        }
+        
+        .client-info-block-exact {
+          max-width: 60%;
+        }
+        
+        .section-label-exact {
+          color: #C21820;
+          font-size: 12px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          margin-bottom: 8px;
+        }
+        
+        .client-name-exact {
+          font-size: 18px;
+          font-weight: 800;
+          color: #000000;
+          margin: 0 0 6px 0;
+          text-transform: capitalize;
+        }
+        
+        .client-address-exact {
+          font-size: 13px;
+          color: #4B5563;
+          line-height: 1.5;
+          margin: 0 0 8px 0;
+        }
+        
+        .client-contact-exact {
+          font-size: 13px;
+          color: #374151;
+          font-weight: 700;
+        }
+        
+        .items-table-exact {
+          width: 100%;
+          border-collapse: collapse;
+          margin-bottom: 20px;
+        }
+        
+        .items-table-exact th {
+          background-color: #C21820;
+          color: #ffffff;
+          font-size: 12px;
+          font-weight: 700;
+          text-transform: uppercase;
+          padding: 10px 14px;
+          border: 1px solid #C21820;
+        }
+        
+        .items-table-exact th.center, .items-table-exact td.center {
+          text-align: center;
+        }
+        
+        .items-table-exact th.num, .items-table-exact td.num {
+          text-align: right;
+        }
+        
+        .items-table-exact td {
+          padding: 12px 14px;
+          border: 1px solid #E5E7EB;
+          font-size: 13px;
+          color: #374151;
+        }
+        
+        .items-table-exact tr.alternate-row {
+          background-color: #FFF5F5;
+        }
+        
+        .items-table-exact td.bold {
+          font-weight: 700;
+          color: #111827;
+        }
+        
+        .items-table-exact tr.total-row td {
+          background-color: #C21820;
+          color: #ffffff;
+          font-weight: 700;
+          border: 1px solid #C21820;
+        }
+        
+        .summary-section-exact {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-top: 15px;
+        }
+        
+        .amount-words-exact {
+          max-width: 50%;
+        }
+        
+        .amount-words-title-exact {
+          color: #C21820;
+          font-size: 12px;
+          font-weight: 700;
+          text-transform: uppercase;
+          margin-bottom: 4px;
+        }
+        
+        .amount-words-text-exact {
+          font-size: 13px;
+          color: #4B5563;
+          line-height: 1.4;
+        }
+        
+        .totals-box-exact {
+          width: 300px;
+        }
+        
+        .totals-table-exact {
+          width: 100%;
+          border-collapse: collapse;
+        }
+        
+        .totals-table-exact td {
+          padding: 8px 14px;
+          font-size: 13px;
+          color: #374151;
+          border: 1px solid #E5E7EB;
+        }
+        
+        .totals-table-exact td.label {
+          font-weight: 700;
+        }
+        
+        .totals-table-exact td.val {
+          text-align: right;
+          font-weight: 700;
+        }
+        
+        .totals-table-exact tr.grand-total td {
+          background-color: #C21820;
+          color: #ffffff;
+          font-weight: 700;
+          border: 1px solid #C21820;
+        }
+        
+        .footer-section-exact {
+          margin-top: 50px;
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-end;
+        }
+        
+        .sign-box-exact {
+          text-align: center;
+          width: 220px;
+        }
+        
+        .sign-box-exact p {
+          margin: 0;
+          font-size: 12px;
+          color: #374151;
+        }
+        
+        .stamp-area-exact {
+          height: 100px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 10px;
+          position: relative;
+        }
+        
+        .stamp-area-exact img {
+          width: 180px;
+          height: auto;
+          max-width: 200px;
+          object-fit: contain;
+        }
+        
+        .signatory-label-exact {
+          padding-top: 6px;
+          font-size: 12px;
+          font-weight: 700;
+          color: #111827;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        
+        .bottom-accent-exact {
+          margin-top: 40px;
+          height: 16px;
+          background-color: #C21820;
+          position: relative;
+          border-radius: 0 0 8px 8px;
+        }
+        
+        .bottom-accent-exact::after {
+          content: '';
+          position: absolute;
+          bottom: 0;
+          right: 0;
+          width: 250px;
+          height: 48px;
+          background-color: #1A2536;
+          border-radius: 48px 0 8px 0;
+        }
+      </style>
+
+      <div class="quotation-container-exact">
+        <!-- Top Contact Banner -->
+        <div class="header-banner-exact">
+          <div class="contact-col-exact">
+            <div class="contact-item-exact">
+              <svg viewBox="0 0 24 24" class="contact-icon-exact"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+              <span class="contact-text-exact">${companyPhone}</span>
             </div>
           </div>
-          <div class="contact-col border-left" style="display: flex; align-items: center; padding: 12px 14px; flex-grow: 1; border-left: 1px solid rgba(255, 255, 255, 0.4);">
-            <div class="contact-item" style="display: flex; align-items: center; gap: 8px;">
-              <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; fill: #ffffff; flex-shrink: 0;"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-              <span class="contact-text" style="font-size: 11px; font-weight: 500; line-height: 1.3;">${formattedEmail}</span>
+          <div class="contact-col-exact border-left">
+            <div class="contact-item-exact">
+              <svg viewBox="0 0 24 24" class="contact-icon-exact"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+              <span class="contact-text-exact">${formattedEmail}</span>
             </div>
           </div>
-          <div class="contact-col border-left" style="display: flex; align-items: center; padding: 12px 14px; flex-grow: 1; border-left: 1px solid rgba(255, 255, 255, 0.4);">
-            <div class="contact-item" style="display: flex; align-items: center; gap: 8px;">
-              <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; fill: #ffffff; flex-shrink: 0;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-              <span class="contact-text" style="font-size: 10px; font-weight: 500; line-height: 1.3;">${formattedAddress}</span>
+          <div class="contact-col-exact border-left">
+            <div class="contact-item-exact">
+              <svg viewBox="0 0 24 24" class="contact-icon-exact"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+              <span class="contact-text-exact">${formattedAddress}</span>
             </div>
           </div>
         </div>
-
-        <!-- Meta Section & Dark Navy Wave -->
-        <div class="meta-section" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; position: relative; height: 140px;">
-          <div class="company-info-wave" style="background-color: #1A2536; color: #ffffff; padding: 50px 40px 12px 24px; border-radius: 0 0 100px 0; margin-left: -30px; width: 60%; box-sizing: border-box; position: relative;">
-            <div class="logo-box" style="position: absolute; top: 10px; left: 24px; display: flex; align-items: center; justify-content: center; width: 110px; height: 60px; z-index: 10;">
-              <img src="assets/images/logo_copy.png" class="logo-img" alt="Logo" style="max-height: 55px; max-width: 100%; object-fit: contain;" onerror="this.outerHTML='<span class=\'logo-text\' style=\'color: #C21820; font-weight: 800; font-size: 22px;\'>EBS</span>'" />
+        
+        <!-- Meta Section & Logo -->
+        <div class="meta-section-exact">
+          <div class="company-info-wave-exact">
+            <div class="logo-box-exact">
+              <img src="assets/images/logo_copy.png" class="logo-img-exact" alt="Logo" onerror="this.outerHTML='<span style=\'color: #C21820; font-weight: 800; font-size: 20px;\'>EBS</span>'" />
             </div>
-            <h1 style="margin: 0 0 4px 0; font-size: 18px; font-weight: 700; color: #ffffff;">${companyName}</h1>
-            ${isGstOn ? `<p style="margin: 2px 0; font-size: 11px; color: #E2E8F0; opacity: 0.9;">GSTIN: ${companyGst}</p>` : ''}
-            <p style="margin: 2px 0; font-size: 11px; color: #E2E8F0; opacity: 0.9;">State: ${companyState}</p>
+            <h1>${companyName}</h1>
+            ${isGstOn ? `<p>GSTIN: ${companyGst}</p>` : ''}
+            <p>State: ${companyState}</p>
           </div>
-
-          <div class="estimate-title-block" style="text-align: left; padding-right: 10px;">
-            <h2 style="margin: 0 0 10px 0; font-size: 26px; font-weight: 700; color: #111827; letter-spacing: -0.5px;">Estimate</h2>
-            <table class="meta-details-table" style="border-collapse: collapse;">
+          <div class="estimate-title-block-exact">
+            <h2>Estimate</h2>
+            <table class="meta-details-table-exact">
               <tr>
-                <td class="label" style="font-weight: 700; color: #374151; padding: 4px 8px 4px 0; font-size: 13px;">Estimate No.:</td>
-                <td class="value bold" style="font-weight: 700; color: #111827; font-size: 13px;">${estimateNo}</td>
+                <td class="label">Estimate No.:</td>
+                <td class="value bold" style="color: #111827;">${estimateNo}</td>
               </tr>
               <tr>
-                <td class="label" style="font-weight: 700; color: #374151; padding: 4px 8px 4px 0; font-size: 13px;">Date:</td>
-                <td class="value" style="font-weight: 700; color: #111827; font-size: 13px;">${date}</td>
+                <td class="label">Date:</td>
+                <td class="value">${date}</td>
               </tr>
             </table>
           </div>
         </div>
-
+        
         <!-- Client Section -->
-        <div class="client-section" style="margin-bottom: 30px; display: flex; justify-content: space-between;">
-          <div class="client-info-block" style="max-width: 65%;">
-            <div class="section-label" style="color: #C21820; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Estimate For:</div>
-            <div class="client-name" style="font-size: 18px; font-weight: 800; color: #000000; margin: 0 0 6px 0; text-transform: capitalize;">${clientName}</div>
-            <div class="client-address" style="font-size: 13px; color: #4B5563; line-height: 1.5; margin: 0 0 8px 0;">${clientAddress ? clientAddress.replace(/\n/g, '<br>') : 'N/A'}</div>
-            <div class="client-contact" style="font-size: 13px; color: #374151; font-weight: 700;">Contact No.: ${clientPhone}</div>
+        <div class="client-section-exact">
+          <div class="client-info-block-exact">
+            <div class="section-label-exact">Estimate For:</div>
+            <div class="client-name-exact">${clientName}</div>
+            <div class="client-address-exact">${clientAddress ? clientAddress.replace(/\n/g, '<br>') : 'N/A'}</div>
+            <div class="client-contact-exact">Contact No.: ${clientPhone}</div>
           </div>
         </div>
-
+        
         <!-- Items Table -->
-        <table class="items-table" style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+        <table class="items-table-exact">
           <thead>
-            <tr style="background-color: #C21820; color: #ffffff; font-size: 12px; font-weight: 700; text-transform: uppercase;">
-              <th class="center" style="padding: 10px 14px; border: 1px solid #C21820; width: 5%; text-align: center;">#</th>
-              <th style="padding: 10px 14px; border: 1px solid #C21820; text-align: left; width: ${isGstOn ? '40%' : '51%'}">Item name</th>
-              <th class="center" style="padding: 10px 14px; border: 1px solid #C21820; width: 10%; text-align: center;">Quantity</th>
-              <th class="center" style="padding: 10px 14px; border: 1px solid #C21820; width: 10%; text-align: center;">Unit</th>
-              <th class="num" style="padding: 10px 14px; border: 1px solid #C21820; width: 11%; text-align: right;">Price/Unit</th>
-              ${isGstOn ? '<th class="center" style="padding: 10px 14px; border: 1px solid #C21820; width: 11%; text-align: center;">GST</th>' : ''}
-              <th class="num" style="padding: 10px 14px; border: 1px solid #C21820; width: 13%; text-align: right;">Amount</th>
+            <tr>
+              <th class="center" style="width: 5%">#</th>
+              <th style="width: ${isGstOn ? '40%' : '51%'}">Item name</th>
+              <th class="center" style="width: 10%">Quantity</th>
+              <th class="center" style="width: 10%">Unit</th>
+              <th class="num" style="width: 11%">Price/Unit</th>
+              ${isGstOn ? '<th class="center" style="width: 11%">GST</th>' : ''}
+              <th class="num" style="width: 13%">Amount</th>
             </tr>
           </thead>
           <tbody>
             ${tableRows}
-            <tr class="total-row" style="background-color: #C21820; color: #ffffff; font-weight: 700;">
-              <td class="center" style="padding: 10px 14px; border: 1px solid #C21820; text-align: center;"></td>
-              <td style="padding: 10px 14px; border: 1px solid #C21820;">TOTAL</td>
-              <td class="center" style="padding: 10px 14px; border: 1px solid #C21820; text-align: center;">${totalQuantity}</td>
-              <td class="center" style="padding: 10px 14px; border: 1px solid #C21820;"></td>
-              <td class="num" style="padding: 10px 14px; border: 1px solid #C21820;"></td>
-              ${isGstOn ? '<td class="center" style="padding: 10px 14px; border: 1px solid #C21820;"></td>' : ''}
-              <td class="num" style="padding: 10px 14px; border: 1px solid #C21820; text-align: right;">${formatCurrency(grandTotal)}</td>
+            <tr class="total-row">
+              <td class="center"></td>
+              <td>TOTAL</td>
+              <td class="center">${totalQuantity}</td>
+              <td class="center"></td>
+              <td class="num"></td>
+              ${isGstOn ? '<td class="center"></td>' : ''}
+              <td class="num">${formatCurrency(grandTotal)}</td>
             </tr>
           </tbody>
         </table>
-
+        
         <!-- Summary Section -->
-        <div class="summary-section" style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 15px;">
-          <div class="amount-words" style="max-width: 50%;">
-            <div class="amount-words-title" style="color: #C21820; font-size: 12px; font-weight: 700; text-transform: uppercase; margin-bottom: 4px;">Estimate Amount In Words</div>
-            <div class="amount-words-text" style="font-size: 13px; color: #4B5563; line-height: 1.4;">${grandTotalWords}</div>
+        <div class="summary-section-exact">
+          <div class="amount-words-exact">
+            <div class="amount-words-title-exact">Estimate Amount In Words</div>
+            <div class="amount-words-text-exact">${grandTotalWords}</div>
           </div>
-
-          <div class="totals-box" style="width: 300px;">
-            <table class="totals-table" style="width: 100%; border-collapse: collapse;">
+          
+          <div class="totals-box-exact">
+            <table class="totals-table-exact">
               <tr>
-                <td class="label" style="padding: 8px 14px; font-size: 13px; color: #374151; border: 1px solid #E5E7EB; font-weight: 700;">${isGstOn ? 'Sub Total (Excl. GST)' : 'Total Amount'}</td>
-                <td class="val" style="padding: 8px 14px; font-size: 13px; color: #374151; border: 1px solid #E5E7EB; text-align: right; font-weight: 700;">${formatCurrency(baseSubtotal)}</td>
+                <td class="label">${isGstOn ? 'Sub Total (Excl. GST)' : 'Total Amount'}</td>
+                <td class="val">${formatCurrency(baseSubtotal)}</td>
               </tr>
               ${isGstOn ? `
               <tr>
-                <td class="label" style="padding: 8px 14px; font-size: 13px; color: #374151; border: 1px solid #E5E7EB; font-weight: 700;">GST Total</td>
-                <td class="val" style="padding: 8px 14px; font-size: 13px; color: #374151; border: 1px solid #E5E7EB; text-align: right; font-weight: 700;">${formatCurrency(gstTotal)}</td>
+                <td class="label">GST Total</td>
+                <td class="val">${formatCurrency(gstTotal)}</td>
               </tr>
               ` : ''}
-              <tr class="grand-total" style="background-color: #C21820; color: #ffffff; font-weight: 700;">
-                <td class="label" style="padding: 8px 14px; font-size: 13px; border: 1px solid #C21820; font-weight: 700;">Grand Total</td>
-                <td class="val" style="padding: 8px 14px; font-size: 13px; border: 1px solid #C21820; text-align: right; font-weight: 700;">${formatCurrency(grandTotal)}</td>
+              <tr class="grand-total">
+                <td class="label">Grand Total</td>
+                <td class="val">${formatCurrency(grandTotal)}</td>
               </tr>
             </table>
           </div>
         </div>
-
+        
         <!-- Footer / Signatory -->
-        <div class="footer-section" style="margin-top: 50px; display: flex; justify-content: space-between; align-items: flex-end;">
-          <div class="sign-box" style="text-align: left; width: auto;"></div>
-          <div class="sign-box" style="text-align: center; width: 220px;">
-            <p style="margin: 0; font-size: 12px; color: #374151;">For : ${companyName}</p>
-            <div class="stamp-area" style="height: 90px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
-              <img src="assets/images/sign.png" alt="Official Seal" style="width: 180px; height: auto; max-width: 200px; object-fit: contain;" onerror="this.outerHTML='<div style=\'width: 75px; height: 75px; border: 2px dashed rgba(60, 50, 160, 0.4); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: rgba(60, 50, 160, 0.5); font-size: 8px; font-weight: 700;\'>SEAL<span style=\'font-size: 12px; font-weight: 800;\'>STAMP</span></div>'" />
+        <div class="footer-section-exact">
+          <div class="sign-box-exact" style="text-align: left; width: auto;"></div>
+          <div class="sign-box-exact">
+            <p>For : ${companyName}</p>
+            <div class="stamp-area-exact">
+              <img src="assets/images/sign.png" alt="Official Seal" onerror="this.outerHTML='<div style=\'width: 75px; height: 75px; border: 2px dashed rgba(60, 50, 160, 0.4); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: rgba(60, 50, 160, 0.5); font-size: 8px; font-weight: 700;\'>SEAL<span style=\'font-size: 12px; font-weight: 800;\'>STAMP</span></div>'" />
             </div>
-            <div class="signatory-label" style="padding-top: 6px; font-size: 12px; font-weight: 700; color: #111827; text-transform: uppercase; letter-spacing: 0.5px;">Authorized Signatory</div>
+            <div class="signatory-label-exact">Authorized Signatory</div>
           </div>
         </div>
-
+        
         <!-- Bottom Accent Bar -->
-        <div class="bottom-accent" style="margin-top: 40px; height: 16px; background-color: #C21820; position: relative; border-radius: 0 0 8px 8px;">
-          <div style="position: absolute; bottom: 0; right: 0; width: 250px; height: 48px; background-color: #1A2536; border-radius: 48px 0 8px 0;"></div>
-        </div>
+        <div class="bottom-accent-exact"></div>
       </div>
     `;
   }
