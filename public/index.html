@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Estimate Pro - Modern Quotation & Billing Management</title>
+  <!-- Google Fonts & Font Awesome Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar / Top Navigation Header -->
+    <header class="app-header">
+      <div class="header-brand">
+        <div class="brand-icon">
+          <i class="fa-solid fa-file-invoice-dollar"></i>
+        </div>
+        <div class="brand-text">
+          <h1>Estimate<span>Pro</span></h1>
+          <p>Quotation & Billing Management System</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div class="db-status-badge" id="dbStatus">
+          <span class="pulse-dot"></span> <span id="dbStatusText">Checking DB...</span>
+        </div>
+        <button class="btn btn-primary" id="btnNewEstimate">
+          <i class="fa-solid fa-plus"></i> Create Estimate
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Dashboard Metrics Cards -->
+      <section class="metrics-grid">
+        <div class="metric-card card-glass">
+          <div class="metric-icon total-icon"><i class="fa-solid fa-receipt"></i></div>
+          <div class="metric-info">
+            <span class="metric-label">Total Estimates</span>
+            <h3 class="metric-value" id="metricTotalCount">0</h3>
+          </div>
+        </div>
+        <div class="metric-card card-glass">
+          <div class="metric-icon value-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+          <div class="metric-info">
+            <span class="metric-label">Total Portfolio Value</span>
+            <h3 class="metric-value" id="metricTotalValue">₹0.00</h3>
+          </div>
+        </div>
+        <div class="metric-card card-glass">
+          <div class="metric-icon draft-icon"><i class="fa-solid fa-pen-ruler"></i></div>
+          <div class="metric-info">
+            <span class="metric-label">Draft Estimates</span>
+            <h3 class="metric-value" id="metricDraftCount">0</h3>
+          </div>
+        </div>
+        <div class="metric-card card-glass">
+          <div class="metric-icon final-icon"><i class="fa-solid fa-circle-check"></i></div>
+          <div class="metric-info">
+            <span class="metric-label">Finalized Quotes</span>
+            <h3 class="metric-value" id="metricFinalCount">0</h3>
+          </div>
+        </div>
+      </section>
+
+      <!-- Control Toolbar: Search & Filters -->
+      <section class="toolbar-section card-glass">
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass search-icon"></i>
+          <input type="text" id="searchInput" placeholder="Search by Estimate No, Client, Company..." />
+          <button class="btn-clear" id="btnClearSearch"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label"><i class="fa-solid fa-filter"></i> Status:</span>
+          <div class="filter-pills">
+            <button class="pill-btn active" data-status="all">All</button>
+            <button class="pill-btn" data-status="draft">Drafts</button>
+            <button class="pill-btn" data-status="finalized">Finalized</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Estimates Table Listing -->
+      <section class="table-section card-glass">
+        <div class="table-header-title">
+          <h2><i class="fa-solid fa-list-check"></i> Estimates Records</h2>
+          <span class="records-count" id="recordsCount">Showing 0 records</span>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table" id="estimatesTable">
+            <thead>
+              <tr>
+                <th>Estimate No</th>
+                <th>Date</th>
+                <th>Client Name</th>
+                <th>Company</th>
+                <th>Items Qty</th>
+                <th>Grand Total</th>
+                <th>Status</th>
+                <th class="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="estimatesTableBody">
+              <!-- Dynamically populated rows -->
+              <tr>
+                <td colspan="8" class="text-center py-4">
+                  <div class="loading-spinner"></div>
+                  <p>Loading estimates from server...</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Create / Edit Estimate Modal -->
+  <div class="modal-backdrop" id="estimateModal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 id="modalTitle"><i class="fa-solid fa-file-signature"></i> Create New Estimate</h3>
+        <button class="modal-close" id="btnCloseModal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="estimateForm">
+        <input type="hidden" id="estimateId" value="" />
+        <div class="modal-body">
+          <!-- Section 1: Top Document Meta -->
+          <div class="form-grid cols-4">
+            <div class="form-group">
+              <label for="estimateNo">Estimate Number</label>
+              <input type="text" id="estimateNo" placeholder="Auto-generated (e.g., EBS/26-27/EST/1001)" />
+              <small class="help-text">Leave blank to auto-generate</small>
+            </div>
+            <div class="form-group">
+              <label for="estimateDate">Estimate Date *</label>
+              <input type="date" id="estimateDate" required />
+            </div>
+            <div class="form-group">
+              <label for="status">Document Status *</label>
+              <select id="status" required>
+                <option value="draft">Draft</option>
+                <option value="finalized">Finalized</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="isGstEnabled">Enable GST (18%)</label>
+              <div class="toggle-container" style="padding-top: 6px;">
+                <label class="switch">
+                  <input type="checkbox" id="isGstEnabled" checked>
+                  <span class="slider round"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- Section 2: Business & Client Information -->
+          <div class="form-grid cols-2">
+            <!-- Company Info Box -->
+            <div class="form-card-inner">
+              <h4 class="card-inner-title"><i class="fa-solid fa-building"></i> Company Details (Issuer)</h4>
+              <div class="form-group">
+                <label for="companyName">Company Name *</label>
+                <input type="text" id="companyName" value="KRISHIKRANTI ORGANICS" required />
+              </div>
+              <div class="form-grid cols-2">
+                <div class="form-group">
+                  <label for="companyGst">GSTIN</label>
+                  <input type="text" id="companyGst" value="23ABEFK9255G1Z9" />
+                </div>
+                <div class="form-group">
+                  <label for="companyState">State Code</label>
+                  <input type="text" id="companyState" value="23-Madhya Pradesh" />
+                </div>
+              </div>
+              <div class="form-grid cols-2">
+                <div class="form-group">
+                  <label for="companyPhone">Phone</label>
+                  <input type="text" id="companyPhone" value="9399022060" />
+                </div>
+                <div class="form-group">
+                  <label for="companyEmail">Email</label>
+                  <input type="email" id="companyEmail" value="krishikrantiorganics@gmail.com" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="companyAddress">Company Address</label>
+                <textarea id="companyAddress" rows="2">EWS - 101, The Bellaire Appartment, Gondermau Gandhi Nagar, Bhopal 462036, Madhya Pradesh</textarea>
+              </div>
+            </div>
+
+            <!-- Client Info Box -->
+            <div class="form-card-inner">
+              <h4 class="card-inner-title"><i class="fa-solid fa-user-tie"></i> Client Details (Customer)</h4>
+              <div class="form-group">
+                <label for="clientName">Client Name *</label>
+                <input type="text" id="clientName" placeholder="Enter customer / company name" required />
+              </div>
+              <div class="form-group">
+                <label for="clientPhone">Phone Number</label>
+                <input type="text" id="clientPhone" placeholder="+91 9876543210" />
+              </div>
+              <div class="form-group">
+                <label for="clientAddress">Billing / Shipping Address</label>
+                <textarea id="clientAddress" rows="3" placeholder="Enter customer address details"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- Section 3: Dynamic Itemized Table -->
+          <div class="items-section">
+            <div class="items-header">
+              <h4><i class="fa-solid fa-boxes-stacked"></i> Line Items</h4>
+              <button type="button" class="btn btn-secondary btn-sm" id="btnAddItem">
+                <i class="fa-solid fa-plus"></i> Add Item Row
+              </button>
+            </div>
+
+            <div class="table-responsive">
+              <table class="items-table" id="itemsTable">
+                <thead>
+                  <tr>
+                    <th style="width: 35%;">Item / Service Description *</th>
+                    <th style="width: 12%;">Qty *</th>
+                    <th style="width: 13%;">Unit</th>
+                    <th style="width: 15%;">Price (₹) *</th>
+                    <th style="width: 12%;">GST (%)</th>
+                    <th style="width: 13%;">Amount (₹)</th>
+                    <th style="width: 5%;"></th>
+                  </tr>
+                </thead>
+                <tbody id="itemsTableBody">
+                  <!-- Item rows dynamically appended here -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Calculation Footer -->
+            <div class="calculation-summary">
+              <div class="notes-box">
+                <label for="estimateNotes">Terms & Notes</label>
+                <textarea id="estimateNotes" rows="3" placeholder="e.g. Validity 15 days. 50% advance payment required."></textarea>
+              </div>
+              <div class="totals-box">
+                <div class="total-row">
+                  <span>Total Quantity:</span>
+                  <strong id="calcTotalQty">0</strong>
+                </div>
+                <div class="total-row">
+                  <span>Subtotal (Excl. Tax):</span>
+                  <span id="calcSubtotal">₹0.00</span>
+                </div>
+                <div class="total-row">
+                  <span>Total Tax (GST):</span>
+                  <span id="calcTotalGst">₹0.00</span>
+                </div>
+                <div class="total-row grand-total">
+                  <span>Grand Total (Incl. Tax):</span>
+                  <strong id="calcGrandTotal">₹0.00</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" id="btnCancelModal">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btnSaveEstimate">
+            <i class="fa-solid fa-floppy-disk"></i> Save Estimate
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Print / PDF View Modal -->
+  <div class="modal-backdrop" id="printModal">
+    <div class="modal-container modal-lg">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-print"></i> Estimate Document Preview</h3>
+        <div class="header-btns">
+          <button type="button" class="btn btn-primary btn-sm" onclick="window.print()">
+            <i class="fa-solid fa-print"></i> Print / Download PDF
+          </button>
+          <button class="modal-close" id="btnClosePrintModal"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+      </div>
+      <div class="modal-body printable-area" id="printableInvoiceContent">
+        <!-- Generated document invoice goes here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- App JavaScript -->
+  <script src="js/app.js"></script>
+</body>
+</html>
