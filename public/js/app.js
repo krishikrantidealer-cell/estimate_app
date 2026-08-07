@@ -1,6 +1,6 @@
 /**
  * ESTIMATE PRO - MAIN FRONTEND APP LOGIC
- * Matching estimate_generator_page.dart specification & features
+ * Full-Screen Split Studio View & Real-Time Live Preview Engine
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -10,10 +10,13 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentSearchQuery = '';
   let activeEditingId = null;
 
-  // DOM Elements
+  // DOM Elements - Views & Header
+  const mainHeader = document.getElementById('mainHeader');
+  const historyView = document.getElementById('historyView');
+  const studioView = document.getElementById('studioView');
   const dbStatusText = document.getElementById('dbStatusText');
   const dbStatus = document.getElementById('dbStatus');
-  
+
   // Metric Elements
   const metricTotalCount = document.getElementById('metricTotalCount');
   const metricTotalValue = document.getElementById('metricTotalValue');
@@ -27,30 +30,20 @@ document.addEventListener('DOMContentLoaded', () => {
   const estimatesTableBody = document.getElementById('estimatesTableBody');
   const recordsCount = document.getElementById('recordsCount');
 
-  // Modal Elements
+  // Buttons & Controls
   const btnNewEstimate = document.getElementById('btnNewEstimate');
-  const estimateModal = document.getElementById('estimateModal');
-  const btnCloseModal = document.getElementById('btnCloseModal');
-  const btnCancelModal = document.getElementById('btnCancelModal');
-  const estimateForm = document.getElementById('estimateForm');
-  const modalTitle = document.getElementById('modalTitle');
+  const btnBackToHistory = document.getElementById('btnBackToHistory');
+  const btnSaveDraft = document.getElementById('btnSaveDraft');
+  const btnPrintStudio = document.getElementById('btnPrintStudio');
+  const studioTitle = document.getElementById('studioTitle');
   const estimateIdInput = document.getElementById('estimateId');
   const isGstEnabledCheckbox = document.getElementById('isGstEnabled');
 
-  // Items Table Elements
+  // Form Fields
+  const studioForm = document.getElementById('studioForm');
   const itemsTableBody = document.getElementById('itemsTableBody');
   const btnAddItem = document.getElementById('btnAddItem');
-
-  // Calculation Summary Elements
-  const calcTotalQty = document.getElementById('calcTotalQty');
-  const calcSubtotal = document.getElementById('calcSubtotal');
-  const calcTotalGst = document.getElementById('calcTotalGst');
-  const calcGrandTotal = document.getElementById('calcGrandTotal');
-
-  // Print Modal Elements
-  const printModal = document.getElementById('printModal');
-  const btnClosePrintModal = document.getElementById('btnClosePrintModal');
-  const printableInvoiceContent = document.getElementById('printableInvoiceContent');
+  const livePreviewContainer = document.getElementById('livePreviewContainer');
 
   // Utility: Format Currency (INR)
   function formatCurrency(amount) {
@@ -61,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }).format(amount || 0);
   }
 
-  // Convert Number to Words (Rupees & Paise) - Matching Flutter estimate_generator_page.dart
+  // Convert Number to Words (Rupees & Paise)
   function numberToWords(amount) {
     if (!amount || amount === 0) return 'Zero Rupees only';
 
@@ -158,7 +151,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Update Dashboard Cards
   function updateMetrics(stats) {
     if (!stats) return;
     metricTotalCount.textContent = stats.totalCount || 0;
@@ -167,7 +159,6 @@ document.addEventListener('DOMContentLoaded', () => {
     metricFinalCount.textContent = stats.finalizedCount || 0;
   }
 
-  // Render Estimates Table
   function renderTable(dataList) {
     recordsCount.textContent = `Showing ${dataList.length} record${dataList.length === 1 ? '' : 's'}`;
 
@@ -176,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <tr>
           <td colspan="8" class="text-center py-4" style="color: var(--text-muted);">
             <i class="fa-solid fa-folder-open" style="font-size: 32px; margin-bottom: 8px; display: block;"></i>
-            No estimates found matching criteria.
+            No estimates found. Click "Create Estimate" above to make your first estimate.
           </td>
         </tr>
       `;
@@ -206,10 +197,10 @@ document.addEventListener('DOMContentLoaded', () => {
           </td>
           <td class="text-right">
             <div class="action-btns">
-              <button class="btn btn-icon-only btn-view" title="Print / View Invoice" onclick="viewEstimate('${est._id}')">
-                <i class="fa-solid fa-print"></i>
+              <button class="btn btn-icon-only btn-view" title="Open Studio Preview" onclick="editEstimate('${est._id}')">
+                <i class="fa-solid fa-eye"></i>
               </button>
-              <button class="btn btn-icon-only btn-edit" title="Edit Estimate" onclick="editEstimate('${est._id}')">
+              <button class="btn btn-icon-only btn-edit" title="Edit in Studio" onclick="editEstimate('${est._id}')">
                 <i class="fa-solid fa-pen-to-square"></i>
               </button>
               <button class="btn btn-icon-only btn-delete" title="Delete Estimate" onclick="deleteEstimate('${est._id}')">
@@ -233,7 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
   }
 
-  // 3. Dynamic Items Table in Modal
+  // 3. Dynamic Item Row Addition
   function addItemRow(item = {}) {
     const tr = document.createElement('tr');
     tr.className = 'item-row';
@@ -242,7 +233,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     tr.innerHTML = `
       <td>
-        <input type="text" class="item-name" placeholder="Product or Service Name" value="${item.name || ''}" required />
+        <input type="text" class="item-name" placeholder="Product / Service Name" value="${item.name || ''}" required />
       </td>
       <td>
         <input type="number" class="item-qty" min="1" step="any" placeholder="1" value="${item.quantity || 1}" required />
@@ -264,16 +255,19 @@ document.addEventListener('DOMContentLoaded', () => {
       </td>
     `;
 
-    // Add calculation listeners
-    const inputs = tr.querySelectorAll('.item-qty, .item-price, .item-gst');
+    // Real-time recalculation and live preview trigger
+    const inputs = tr.querySelectorAll('.item-name, .item-qty, .item-unit, .item-price, .item-gst');
     inputs.forEach(input => {
-      input.addEventListener('input', () => updateRowAmount(tr));
+      input.addEventListener('input', () => {
+        updateRowAmount(tr);
+        updateLivePreview();
+      });
     });
 
     tr.querySelector('.btn-remove-row').addEventListener('click', () => {
       if (itemsTableBody.children.length > 1) {
         tr.remove();
-        calculateSummary();
+        updateLivePreview();
       } else {
         alert('Estimate must contain at least one line item.');
       }
@@ -295,19 +289,38 @@ document.addEventListener('DOMContentLoaded', () => {
     const totalAmount = baseAmount + gstAmount;
 
     row.querySelector('.item-amount').value = totalAmount.toFixed(2);
-    calculateSummary();
   }
 
-  function calculateSummary() {
+  // 4. Real-Time Live Preview Renderer (Right Column Studio Panel)
+  function updateLivePreview() {
     const isGstOn = isGstEnabledCheckbox ? isGstEnabledCheckbox.checked : true;
-    let totalQty = 0;
+
+    const companyName = document.getElementById('companyName').value.trim() || 'KRISHIKRANTI ORGANICS';
+    const companyGst = document.getElementById('companyGst').value.trim() || '23ABEFK9255G1Z9';
+    const companyState = document.getElementById('companyState').value.trim() || '23-Madhya Pradesh';
+    const companyPhone = document.getElementById('companyPhone').value.trim() || '9399022060';
+    const companyEmail = document.getElementById('companyEmail').value.trim() || 'krishikrantiorganics@gmail.com';
+    const companyAddress = document.getElementById('companyAddress').value.trim() || 'EWS - 101, The Bellaire Appartment, Gondermau Gandhi Nagar, Bhopal 462036';
+
+    const estimateNo = document.getElementById('estimateNo').value.trim() || 'EBS/26-27/EST/PREVIEW';
+    const estimateDate = document.getElementById('estimateDate').value || new Date().toISOString().split('T')[0];
+    const status = document.getElementById('status').value || 'draft';
+
+    const clientName = document.getElementById('clientName').value.trim() || 'Customer Name (Type in left panel)';
+    const clientPhone = document.getElementById('clientPhone').value.trim() || '-';
+    const clientAddress = document.getElementById('clientAddress').value.trim() || 'Customer Address';
+    const notes = document.getElementById('estimateNotes').value.trim() || '';
+
+    // Collect Items
     let subtotal = 0;
     let totalGst = 0;
-    let grandTotal = 0;
-
+    let totalQty = 0;
     const rows = itemsTableBody.querySelectorAll('.item-row');
-    rows.forEach(row => {
+
+    const itemsHtml = Array.from(rows).map((row, idx) => {
+      const name = row.querySelector('.item-name').value.trim() || `Item #${idx + 1}`;
       const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+      const unit = row.querySelector('.item-unit').value.trim() || 'liter';
       const price = parseFloat(row.querySelector('.item-price').value) || 0;
       const gstInput = row.querySelector('.item-gst');
       if (!isGstOn) {
@@ -319,33 +332,143 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const baseAmount = qty * price;
       const gstAmount = (baseAmount * gstPct) / 100;
+      const rowTotal = baseAmount + gstAmount;
 
-      totalQty += qty;
       subtotal += baseAmount;
       totalGst += gstAmount;
-      grandTotal += (baseAmount + gstAmount);
-    });
+      totalQty += qty;
 
-    calcTotalQty.textContent = totalQty;
-    calcSubtotal.textContent = formatCurrency(subtotal);
-    calcTotalGst.textContent = formatCurrency(isGstOn ? totalGst : 0);
-    calcGrandTotal.textContent = formatCurrency(grandTotal);
+      return `
+        <tr>
+          <td style="padding: 8px 10px; border-bottom: 1px solid #e2e8f0;">${idx + 1}</td>
+          <td style="padding: 8px 10px; border-bottom: 1px solid #e2e8f0;"><strong>${name}</strong></td>
+          <td style="padding: 8px 10px; border-bottom: 1px solid #e2e8f0;">${qty} ${unit}</td>
+          <td style="padding: 8px 10px; border-bottom: 1px solid #e2e8f0;">₹${price.toFixed(2)}</td>
+          <td style="padding: 8px 10px; border-bottom: 1px solid #e2e8f0;">${isGstOn ? gstPct + '%' : '0%'}</td>
+          <td style="padding: 8px 10px; border-bottom: 1px solid #e2e8f0; text-align: right;">₹${rowTotal.toFixed(2)}</td>
+        </tr>
+      `;
+    }).join('');
+
+    const grandTotal = subtotal + (isGstOn ? totalGst : 0);
+    const wordsText = numberToWords(grandTotal);
+
+    livePreviewContainer.innerHTML = `
+      <div style="background: #ffffff; padding: 24px; font-family: 'Plus Jakarta Sans', sans-serif; color: #1e293b; border-radius: 6px;">
+        <!-- Header Branding Bar -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; border-bottom: 3px solid #c21820; padding-bottom: 16px;">
+          <div>
+            <h2 style="font-size: 22px; font-weight: 800; color: #1e293b; letter-spacing: -0.5px; margin: 0;">${companyName}</h2>
+            <p style="font-size: 11px; color: #475569; margin-top: 4px; max-width: 420px;">${companyAddress}</p>
+            <p style="font-size: 11px; color: #475569;">Ph: ${companyPhone} | Email: ${companyEmail}</p>
+            ${isGstOn ? `<p style="font-size: 11px; color: #1e293b; font-weight: 600;">GSTIN: ${companyGst} | State: ${companyState}</p>` : ''}
+          </div>
+          <div style="text-align: right;">
+            <div style="background: #c21820; color: #ffffff; padding: 5px 16px; border-radius: 4px; display: inline-block; font-size: 16px; font-weight: 800; letter-spacing: 1px;">QUOTATION</div>
+            <div style="font-size: 12px; font-weight: 700; color: #1e293b; margin-top: 6px;">Est No: <span style="color: #2563eb;">${estimateNo}</span></div>
+            <div style="font-size: 11px; color: #64748b;">Date: ${estimateDate}</div>
+            <div style="font-size: 11px; color: #64748b; text-transform: uppercase;">Status: <strong>${status}</strong></div>
+          </div>
+        </div>
+
+        <!-- Billed To Box -->
+        <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 12px 16px; margin-bottom: 18px;">
+          <h4 style="font-size: 10px; text-transform: uppercase; color: #64748b; font-weight: 700; margin: 0 0 4px 0;">CUSTOMER DETAILS (BILLED TO)</h4>
+          <strong style="font-size: 15px; color: #0f172a;">${clientName}</strong>
+          <p style="font-size: 12px; color: #334155; margin-top: 2px;">${clientAddress ? clientAddress.replace(/\n/g, '<br>') : 'N/A'}</p>
+          <p style="font-size: 11px; color: #475569; margin-top: 2px;">Ph: ${clientPhone}</p>
+        </div>
+
+        <!-- Items Table -->
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 18px;">
+          <thead>
+            <tr style="background: #1e293b; color: #ffffff; font-size: 11px; text-transform: uppercase;">
+              <th style="padding: 8px 10px; text-align: left; width: 5%;">#</th>
+              <th style="padding: 8px 10px; text-align: left; width: 45%;">Item / Product Description</th>
+              <th style="padding: 8px 10px; text-align: left; width: 15%;">Qty</th>
+              <th style="padding: 8px 10px; text-align: left; width: 15%;">Rate (₹)</th>
+              <th style="padding: 8px 10px; text-align: left; width: 10%;">GST %</th>
+              <th style="padding: 8px 10px; text-align: right; width: 10%;">Amount (₹)</th>
+            </tr>
+          </thead>
+          <tbody style="font-size: 12px;">
+            ${itemsHtml}
+          </tbody>
+        </table>
+
+        <!-- Amount in Words & Totals -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;">
+          <div style="flex: 1;">
+            <div style="background: #f1f5f9; border-left: 4px solid #c21820; padding: 10px 14px; border-radius: 4px; font-size: 11px; color: #1e293b;">
+              <span style="font-size: 10px; text-transform: uppercase; color: #64748b; font-weight: 700; display: block;">AMOUNT IN WORDS:</span>
+              <strong style="font-size: 12px; color: #0f172a;">${wordsText}</strong>
+            </div>
+            ${notes ? `
+              <div style="margin-top: 12px; font-size: 11px; color: #475569;">
+                <strong style="color: #1e293b;">Terms & Conditions:</strong>
+                <p style="margin-top: 2px;">${notes.replace(/\n/g, '<br>')}</p>
+              </div>
+            ` : ''}
+          </div>
+
+          <div style="width: 250px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px;">
+            <div style="display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0; color: #475569;">
+              <span>Total Quantity:</span>
+              <strong>${totalQty}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0; color: #475569;">
+              <span>Subtotal:</span>
+              <span>₹${subtotal.toFixed(2)}</span>
+            </div>
+            ${isGstOn ? `
+              <div style="display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0; color: #475569;">
+                <span>Total GST:</span>
+                <span>₹${totalGst.toFixed(2)}</span>
+              </div>
+            ` : ''}
+            <div style="display: flex; justify-content: space-between; font-size: 15px; font-weight: 800; border-top: 2px solid #1e293b; margin-top: 6px; padding-top: 6px; color: #0f172a;">
+              <span>Grand Total:</span>
+              <span style="color: #059669;">₹${grandTotal.toFixed(2)}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Signature Block -->
+        <div style="margin-top: 32px; display: flex; justify-content: flex-end;">
+          <div style="text-align: center; width: 200px;">
+            <p style="font-size: 11px; font-weight: 700; color: #1e293b; margin: 0;">For ${companyName}</p>
+            <div style="height: 35px;"></div>
+            <div style="border-top: 1px dashed #94a3b8; padding-top: 4px; font-size: 10px; color: #64748b;">Authorised Signatory</div>
+          </div>
+        </div>
+      </div>
+    `;
   }
 
-  if (isGstEnabledCheckbox) {
-    isGstEnabledCheckbox.addEventListener('change', () => {
-      calculateSummary();
-    });
-  }
+  // Attach real-time input listeners to all form inputs in studio
+  const formInputIds = [
+    'clientName', 'clientPhone', 'clientAddress',
+    'estimateNo', 'estimateDate', 'status', 'isGstEnabled',
+    'companyName', 'companyGst', 'companyState', 'companyPhone', 'companyEmail', 'companyAddress',
+    'estimateNotes'
+  ];
 
-  // 4. Modal Handlers (Create & Edit)
-  function openEstimateModal(estimateData = null) {
+  formInputIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('input', updateLivePreview);
+      el.addEventListener('change', updateLivePreview);
+    }
+  });
+
+  // 5. Open Studio Editor View
+  function openStudioView(estimateData = null) {
     activeEditingId = estimateData ? estimateData._id : null;
     estimateIdInput.value = activeEditingId || '';
     itemsTableBody.innerHTML = '';
 
     if (estimateData) {
-      modalTitle.innerHTML = `<i class="fa-solid fa-pen-to-square"></i> Edit Estimate (${estimateData.estimateNo})`;
+      studioTitle.textContent = `Edit Estimate (${estimateData.estimateNo})`;
       document.getElementById('estimateNo').value = estimateData.estimateNo || '';
       document.getElementById('estimateDate').value = estimateData.estimateDate || new Date().toISOString().split('T')[0];
       document.getElementById('status').value = estimateData.status || 'draft';
@@ -365,22 +488,16 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('clientAddress').value = estimateData.clientAddress || '';
       document.getElementById('estimateNotes').value = estimateData.notes || 'Quotations valid for 15 days.';
 
-      const saveBtn = document.getElementById('btnSaveEstimate');
-      if (saveBtn) saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Update Estimate';
-
       if (estimateData.items && estimateData.items.length > 0) {
         estimateData.items.forEach(item => addItemRow(item));
       } else {
         addItemRow();
       }
     } else {
-      modalTitle.innerHTML = `<i class="fa-solid fa-file-signature"></i> Create New Estimate`;
-      estimateForm.reset();
+      studioTitle.textContent = 'Create New Estimate';
+      studioForm.reset();
       document.getElementById('estimateDate').value = new Date().toISOString().split('T')[0];
       if (isGstEnabledCheckbox) isGstEnabledCheckbox.checked = true;
-
-      const saveBtn = document.getElementById('btnSaveEstimate');
-      if (saveBtn) saveBtn.innerHTML = '<i class="fa-solid fa-plus"></i> Create Estimate';
 
       document.getElementById('companyName').value = 'KRISHIKRANTI ORGANICS';
       document.getElementById('companyGst').value = '23ABEFK9255G1Z9';
@@ -393,38 +510,51 @@ document.addEventListener('DOMContentLoaded', () => {
       addItemRow();
     }
 
-    calculateSummary();
-    estimateModal.classList.add('active');
+    // Switch View
+    mainHeader.style.display = 'none';
+    historyView.style.display = 'none';
+    studioView.style.display = 'flex';
+
+    updateLivePreview();
   }
 
-  function closeModal() {
-    estimateModal.classList.remove('active');
+  function showHistoryView() {
+    studioView.style.display = 'none';
+    mainHeader.style.display = 'flex';
+    historyView.style.display = 'block';
     activeEditingId = null;
+    loadEstimates();
   }
 
-  // 5. Submit Form (Save or Update)
-  estimateForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
+  // 6. Save Estimate Handler (API call)
+  async function saveEstimateFromStudio() {
+    const clientNameVal = document.getElementById('clientName').value.trim();
+    if (!clientNameVal) {
+      alert('Please enter customer name.');
+      document.getElementById('clientName').focus();
+      return;
+    }
 
     const isGstOn = isGstEnabledCheckbox ? isGstEnabledCheckbox.checked : true;
-
-    // Extract item rows
     const items = [];
     const rows = itemsTableBody.querySelectorAll('.item-row');
     rows.forEach(row => {
-      const gstVal = isGstOn ? (parseFloat(row.querySelector('.item-gst').value) || 0) : 0;
-      items.push({
-        name: row.querySelector('.item-name').value.trim(),
-        quantity: parseFloat(row.querySelector('.item-qty').value) || 0,
-        unit: row.querySelector('.item-unit').value.trim() || 'liter',
-        price: parseFloat(row.querySelector('.item-price').value) || 0,
-        gst: gstVal,
-        amount: parseFloat(row.querySelector('.item-amount').value) || 0
-      });
+      const name = row.querySelector('.item-name').value.trim();
+      if (name) {
+        const gstVal = isGstOn ? (parseFloat(row.querySelector('.item-gst').value) || 0) : 0;
+        items.push({
+          name: name,
+          quantity: parseFloat(row.querySelector('.item-qty').value) || 0,
+          unit: row.querySelector('.item-unit').value.trim() || 'liter',
+          price: parseFloat(row.querySelector('.item-price').value) || 0,
+          gst: gstVal,
+          amount: parseFloat(row.querySelector('.item-amount').value) || 0
+        });
+      }
     });
 
     if (items.length === 0) {
-      alert('Please add at least one line item.');
+      alert('Please add at least one line item with description.');
       return;
     }
 
@@ -439,7 +569,7 @@ document.addEventListener('DOMContentLoaded', () => {
       companyPhone: document.getElementById('companyPhone').value.trim(),
       companyEmail: document.getElementById('companyEmail').value.trim(),
       companyAddress: document.getElementById('companyAddress').value.trim(),
-      clientName: document.getElementById('clientName').value.trim(),
+      clientName: clientNameVal,
       clientPhone: document.getElementById('clientPhone').value.trim(),
       clientAddress: document.getElementById('clientAddress').value.trim(),
       items: items,
@@ -451,6 +581,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const url = isEdit ? `/api/estimates/${activeEditingId}` : '/api/estimates';
       const method = isEdit ? 'PUT' : 'POST';
 
+      btnSaveDraft.disabled = true;
+      btnSaveDraft.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Saving...`;
+
       const res = await fetch(url, {
         method: method,
         headers: { 'Content-Type': 'application/json' },
@@ -458,22 +591,26 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       const data = await res.json();
+      btnSaveDraft.disabled = false;
+      btnSaveDraft.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Save Estimate`;
+
       if (data.success) {
-        closeModal();
-        loadEstimates();
+        showHistoryView();
       } else {
         alert(`Error saving estimate: ${data.message}`);
       }
     } catch (err) {
+      btnSaveDraft.disabled = false;
+      btnSaveDraft.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Save Estimate`;
       console.error('Error submitting form:', err);
       alert('Failed to connect to server when saving estimate.');
     }
-  });
+  }
 
-  // Global functions attached to window for inline HTML handlers
+  // Global Handlers
   window.editEstimate = function(id) {
     const est = estimates.find(e => e._id === id);
-    if (est) openEstimateModal(est);
+    if (est) openStudioView(est);
   };
 
   window.deleteEstimate = async function(id) {
@@ -496,138 +633,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // Render Printable Invoice Preview matching Flutter estimate_generator_page.dart layout
-  window.viewEstimate = function(id) {
-    const est = estimates.find(e => e._id === id);
-    if (!est) return;
-
-    let subtotal = 0;
-    let totalGst = 0;
-    const isGstOn = est.isGstEnabled !== undefined ? est.isGstEnabled : true;
-
-    const itemsHtml = (est.items || []).map((item, idx) => {
-      const base = item.quantity * item.price;
-      const gstAmt = isGstOn ? ((base * (item.gst || 0)) / 100) : 0;
-      subtotal += base;
-      totalGst += gstAmt;
-
-      return `
-        <tr>
-          <td>${idx + 1}</td>
-          <td><strong>${item.name}</strong></td>
-          <td>${item.quantity} ${item.unit || 'liter'}</td>
-          <td>₹${item.price ? item.price.toFixed(2) : '0.00'}</td>
-          <td>${isGstOn ? (item.gst || 0) + '%' : '0%'}</td>
-          <td class="text-right">₹${(item.amount || (base + gstAmt)).toFixed(2)}</td>
-        </tr>
-      `;
-    }).join('');
-
-    const wordsText = numberToWords(est.grandTotal || (subtotal + totalGst));
-
-    printableInvoiceContent.innerHTML = `
-      <!-- Top Branding Container: Red Banner + Navy Block matching estimate_generator_page.dart -->
-      <div style="background: #ffffff; padding: 24px; font-family: 'Plus Jakarta Sans', sans-serif; border: 1px solid #e2e8f0; border-radius: 6px;">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; border-bottom: 3px solid #c21820; padding-bottom: 16px;">
-          <div>
-            <h2 style="font-size: 24px; font-weight: 800; color: #1e293b; letter-spacing: -0.5px;">${est.companyName || 'KRISHIKRANTI ORGANICS'}</h2>
-            <p style="font-size: 12px; color: #475569; margin-top: 4px; max-width: 450px;">${est.companyAddress || 'EWS - 101, The Bellaire Appartment, Gondermau Gandhi Nagar, Bhopal 462036'}</p>
-            <p style="font-size: 12px; color: #475569;">Ph: ${est.companyPhone || '9399022060'} | Email: ${est.companyEmail || 'krishikrantiorganics@gmail.com'}</p>
-            ${isGstOn ? `<p style="font-size: 12px; color: #1e293b; font-weight: 600;">GSTIN: ${est.companyGst || '23ABEFK9255G1Z9'} | State: ${est.companyState || '23-Madhya Pradesh'}</p>` : ''}
-          </div>
-          <div style="text-align: right;">
-            <div style="background: #c21820; color: #ffffff; padding: 6px 18px; border-radius: 4px; display: inline-block; font-size: 18px; font-weight: 800; letter-spacing: 1px;">QUOTATION</div>
-            <div style="font-size: 13px; font-weight: 700; color: #1e293b; margin-top: 8px;">Est No: <span style="color: #2563eb;">${est.estimateNo}</span></div>
-            <div style="font-size: 12px; color: #64748b;">Date: ${est.estimateDate}</div>
-            <div style="font-size: 12px; color: #64748b; text-transform: uppercase;">Status: <strong>${est.status}</strong></div>
-          </div>
-        </div>
-
-        <!-- Customer Bill To Box -->
-        <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 14px 18px; margin-bottom: 20px;">
-          <h4 style="font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; margin-bottom: 4px;">CUSTOMER DETAILS (BILLED TO)</h4>
-          <strong style="font-size: 16px; color: #0f172a;">${est.clientName}</strong>
-          <p style="font-size: 13px; color: #334155; margin-top: 2px;">${est.clientAddress ? est.clientAddress.replace(/\n/g, '<br>') : 'N/A'}</p>
-          <p style="font-size: 12px; color: #475569; margin-top: 2px;">Ph: ${est.clientPhone || 'N/A'}</p>
-        </div>
-
-        <!-- Items Table -->
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-          <thead>
-            <tr style="background: #1e293b; color: #ffffff; font-size: 11px; text-transform: uppercase;">
-              <th style="padding: 10px; text-align: left; width: 5%;">#</th>
-              <th style="padding: 10px; text-align: left; width: 45%;">Item / Product Description</th>
-              <th style="padding: 10px; text-align: left; width: 15%;">Qty</th>
-              <th style="padding: 10px; text-align: left; width: 15%;">Rate (₹)</th>
-              <th style="padding: 10px; text-align: left; width: 10%;">GST %</th>
-              <th style="padding: 10px; text-align: right; width: 10%;">Amount (₹)</th>
-            </tr>
-          </thead>
-          <tbody style="font-size: 13px;">
-            ${itemsHtml}
-          </tbody>
-        </table>
-
-        <!-- Amount in Words & Totals Summary -->
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 10px;">
-          <div style="flex: 1; padding-right: 20px;">
-            <div style="background: #f1f5f9; border-left: 4px solid #c21820; padding: 10px 14px; border-radius: 4px; font-size: 12px; color: #1e293b;">
-              <span style="font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; display: block;">AMOUNT IN WORDS:</span>
-              <strong style="font-size: 13px; color: #0f172a;">${wordsText}</strong>
-            </div>
-            ${est.notes ? `
-              <div style="margin-top: 14px; font-size: 12px; color: #475569;">
-                <strong style="color: #1e293b;">Terms & Conditions:</strong>
-                <p style="margin-top: 2px;">${est.notes.replace(/\n/g, '<br>')}</p>
-              </div>
-            ` : ''}
-          </div>
-
-          <div style="width: 280px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 16px;">
-            <div style="display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0; color: #475569;">
-              <span>Total Quantity:</span>
-              <strong>${est.totalQty || 0}</strong>
-            </div>
-            <div style="display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0; color: #475569;">
-              <span>Subtotal:</span>
-              <span>₹${subtotal.toFixed(2)}</span>
-            </div>
-            ${isGstOn ? `
-              <div style="display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0; color: #475569;">
-                <span>Total GST:</span>
-                <span>₹${totalGst.toFixed(2)}</span>
-              </div>
-            ` : ''}
-            <div style="display: flex; justify-content: space-between; font-size: 16px; font-weight: 800; border-top: 2px solid #1e293b; margin-top: 6px; padding-top: 8px; color: #0f172a;">
-              <span>Grand Total:</span>
-              <span style="color: #059669;">₹${(est.grandTotal || (subtotal + totalGst)).toFixed(2)}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Signature Block -->
-        <div style="margin-top: 40px; display: flex; justify-content: flex-end;">
-          <div style="text-align: center; width: 220px;">
-            <p style="font-size: 12px; font-weight: 700; color: #1e293b;">For ${est.companyName || 'KRISHIKRANTI ORGANICS'}</p>
-            <div style="height: 45px;"></div>
-            <div style="border-top: 1px dashed #94a3b8; padding-top: 4px; font-size: 11px; color: #64748b;">Authorised Signatory</div>
-          </div>
-        </div>
-      </div>
-    `;
-
-    printModal.classList.add('active');
-  };
-
   // Event Listeners
-  btnNewEstimate.addEventListener('click', () => openEstimateModal());
-  btnCloseModal.addEventListener('click', closeModal);
-  btnCancelModal.addEventListener('click', closeModal);
+  btnNewEstimate.addEventListener('click', () => openStudioView());
+  btnBackToHistory.addEventListener('click', showHistoryView);
+  btnSaveDraft.addEventListener('click', saveEstimateFromStudio);
+  btnPrintStudio.addEventListener('click', () => window.print());
   btnAddItem.addEventListener('click', () => addItemRow());
-
-  btnClosePrintModal.addEventListener('click', () => {
-    printModal.classList.remove('active');
-  });
 
   // Search input debouncing
   let searchTimeout;

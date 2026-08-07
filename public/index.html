@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Estimate Pro - Modern Quotation & Billing Management</title>
+  <title>Estimate Pro - Modern Quotation & Billing Studio</title>
   <!-- Google Fonts & Font Awesome Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,8 +13,8 @@
 </head>
 <body>
   <div class="app-container">
-    <!-- Sidebar / Top Navigation Header -->
-    <header class="app-header">
+    <!-- Main Header Navbar -->
+    <header class="app-header" id="mainHeader">
       <div class="header-brand">
         <div class="brand-icon">
           <i class="fa-solid fa-file-invoice-dollar"></i>
@@ -34,8 +34,8 @@
       </div>
     </header>
 
-    <!-- Main Content Area -->
-    <main class="main-content">
+    <!-- VIEW 1: History Dashboard -->
+    <main class="main-content" id="historyView">
       <!-- Dashboard Metrics Cards -->
       <section class="metrics-grid">
         <div class="metric-card card-glass">
@@ -106,7 +106,6 @@
               </tr>
             </thead>
             <tbody id="estimatesTableBody">
-              <!-- Dynamically populated rows -->
               <tr>
                 <td colspan="8" class="text-center py-4">
                   <div class="loading-spinner"></div>
@@ -118,184 +117,173 @@
         </div>
       </section>
     </main>
-  </div>
 
-  <!-- Create / Edit Estimate Modal -->
-  <div class="modal-backdrop" id="estimateModal">
-    <div class="modal-container">
-      <div class="modal-header">
-        <h3 id="modalTitle"><i class="fa-solid fa-file-signature"></i> Create New Estimate</h3>
-        <button class="modal-close" id="btnCloseModal"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <form id="estimateForm">
-        <input type="hidden" id="estimateId" value="" />
-        <div class="modal-body">
-          <!-- Section 1: Top Document Meta -->
-          <div class="form-grid cols-4">
-            <div class="form-group">
-              <label for="estimateNo">Estimate Number</label>
-              <input type="text" id="estimateNo" placeholder="Auto-generated (e.g., EBS/26-27/EST/1001)" />
-              <small class="help-text">Leave blank to auto-generate</small>
-            </div>
-            <div class="form-group">
-              <label for="estimateDate">Estimate Date *</label>
-              <input type="date" id="estimateDate" required />
-            </div>
-            <div class="form-group">
-              <label for="status">Document Status *</label>
-              <select id="status" required>
-                <option value="draft">Draft</option>
-                <option value="finalized">Finalized</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="isGstEnabled">Enable GST (18%)</label>
-              <div class="toggle-container" style="padding-top: 6px;">
-                <label class="switch">
-                  <input type="checkbox" id="isGstEnabled" checked>
-                  <span class="slider round"></span>
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <div class="divider"></div>
-
-          <!-- Section 2: Business & Client Information -->
-          <div class="form-grid cols-2">
-            <!-- Company Info Box -->
-            <div class="form-card-inner">
-              <h4 class="card-inner-title"><i class="fa-solid fa-building"></i> Company Details (Issuer)</h4>
-              <div class="form-group">
-                <label for="companyName">Company Name *</label>
-                <input type="text" id="companyName" value="KRISHIKRANTI ORGANICS" required />
-              </div>
-              <div class="form-grid cols-2">
-                <div class="form-group">
-                  <label for="companyGst">GSTIN</label>
-                  <input type="text" id="companyGst" value="23ABEFK9255G1Z9" />
-                </div>
-                <div class="form-group">
-                  <label for="companyState">State Code</label>
-                  <input type="text" id="companyState" value="23-Madhya Pradesh" />
-                </div>
-              </div>
-              <div class="form-grid cols-2">
-                <div class="form-group">
-                  <label for="companyPhone">Phone</label>
-                  <input type="text" id="companyPhone" value="9399022060" />
-                </div>
-                <div class="form-group">
-                  <label for="companyEmail">Email</label>
-                  <input type="email" id="companyEmail" value="krishikrantiorganics@gmail.com" />
-                </div>
-              </div>
-              <div class="form-group">
-                <label for="companyAddress">Company Address</label>
-                <textarea id="companyAddress" rows="2">EWS - 101, The Bellaire Appartment, Gondermau Gandhi Nagar, Bhopal 462036, Madhya Pradesh</textarea>
-              </div>
-            </div>
-
-            <!-- Client Info Box -->
-            <div class="form-card-inner">
-              <h4 class="card-inner-title"><i class="fa-solid fa-user-tie"></i> Client Details (Customer)</h4>
-              <div class="form-group">
-                <label for="clientName">Client Name *</label>
-                <input type="text" id="clientName" placeholder="Enter customer / company name" required />
-              </div>
-              <div class="form-group">
-                <label for="clientPhone">Phone Number</label>
-                <input type="text" id="clientPhone" placeholder="+91 9876543210" />
-              </div>
-              <div class="form-group">
-                <label for="clientAddress">Billing / Shipping Address</label>
-                <textarea id="clientAddress" rows="3" placeholder="Enter customer address details"></textarea>
-              </div>
-            </div>
-          </div>
-
-          <div class="divider"></div>
-
-          <!-- Section 3: Dynamic Itemized Table -->
-          <div class="items-section">
-            <div class="items-header">
-              <h4><i class="fa-solid fa-boxes-stacked"></i> Line Items</h4>
-              <button type="button" class="btn btn-secondary btn-sm" id="btnAddItem">
-                <i class="fa-solid fa-plus"></i> Add Item Row
-              </button>
-            </div>
-
-            <div class="table-responsive">
-              <table class="items-table" id="itemsTable">
-                <thead>
-                  <tr>
-                    <th style="width: 35%;">Item / Service Description *</th>
-                    <th style="width: 12%;">Qty *</th>
-                    <th style="width: 13%;">Unit</th>
-                    <th style="width: 15%;">Price (₹) *</th>
-                    <th style="width: 12%;">GST (%)</th>
-                    <th style="width: 13%;">Amount (₹)</th>
-                    <th style="width: 5%;"></th>
-                  </tr>
-                </thead>
-                <tbody id="itemsTableBody">
-                  <!-- Item rows dynamically appended here -->
-                </tbody>
-              </table>
-            </div>
-
-            <!-- Calculation Footer -->
-            <div class="calculation-summary">
-              <div class="notes-box">
-                <label for="estimateNotes">Terms & Notes</label>
-                <textarea id="estimateNotes" rows="3" placeholder="e.g. Validity 15 days. 50% advance payment required."></textarea>
-              </div>
-              <div class="totals-box">
-                <div class="total-row">
-                  <span>Total Quantity:</span>
-                  <strong id="calcTotalQty">0</strong>
-                </div>
-                <div class="total-row">
-                  <span>Subtotal (Excl. Tax):</span>
-                  <span id="calcSubtotal">₹0.00</span>
-                </div>
-                <div class="total-row">
-                  <span>Total Tax (GST):</span>
-                  <span id="calcTotalGst">₹0.00</span>
-                </div>
-                <div class="total-row grand-total">
-                  <span>Grand Total (Incl. Tax):</span>
-                  <strong id="calcGrandTotal">₹0.00</strong>
-                </div>
-              </div>
-            </div>
+    <!-- VIEW 2: Full-Screen Estimate Studio & Real-time Live Preview (Hidden by default) -->
+    <div class="studio-view" id="studioView" style="display: none;">
+      <!-- Studio Navigation Bar -->
+      <div class="studio-navbar card-glass">
+        <div class="navbar-left">
+          <button class="btn btn-light" id="btnBackToHistory">
+            <i class="fa-solid fa-arrow-left"></i> Back to History
+          </button>
+          <div class="studio-title-group">
+            <h2 id="studioTitle">Estimate Studio</h2>
+            <span class="badge-tag" id="studioSubtitle">Real-Time Interactive Editor</span>
           </div>
         </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn btn-light" id="btnCancelModal">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="btnSaveEstimate">
+        <div class="navbar-right">
+          <button class="btn btn-secondary" id="btnSaveDraft">
             <i class="fa-solid fa-floppy-disk"></i> Save Estimate
           </button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Print / PDF View Modal -->
-  <div class="modal-backdrop" id="printModal">
-    <div class="modal-container modal-lg">
-      <div class="modal-header">
-        <h3><i class="fa-solid fa-print"></i> Estimate Document Preview</h3>
-        <div class="header-btns">
-          <button type="button" class="btn btn-primary btn-sm" onclick="window.print()">
-            <i class="fa-solid fa-print"></i> Print / Download PDF
+          <button class="btn btn-primary" id="btnPrintStudio">
+            <i class="fa-solid fa-print"></i> Download / Print
           </button>
-          <button class="modal-close" id="btnClosePrintModal"><i class="fa-solid fa-xmark"></i></button>
         </div>
       </div>
-      <div class="modal-body printable-area" id="printableInvoiceContent">
-        <!-- Generated document invoice goes here -->
+
+      <!-- Studio Split Screen Layout -->
+      <div class="studio-grid">
+        <!-- LEFT PANEL: Form Inputs -->
+        <div class="studio-editor-panel card-glass">
+          <form id="studioForm">
+            <input type="hidden" id="estimateId" value="" />
+
+            <!-- Section 1: Document Details -->
+            <div class="form-card-inner mb-4">
+              <h4 class="card-inner-title"><i class="fa-solid fa-sliders"></i> 1. Document Metadata</h4>
+              <div class="form-grid cols-2">
+                <div class="form-group">
+                  <label for="estimateNo">Estimate Number</label>
+                  <input type="text" id="estimateNo" placeholder="Auto-generated (e.g. EBS/26-27/EST/1001)" />
+                  <small class="help-text">Leave blank to auto-generate</small>
+                </div>
+                <div class="form-group">
+                  <label for="estimateDate">Date *</label>
+                  <input type="date" id="estimateDate" required />
+                </div>
+              </div>
+              <div class="form-grid cols-2 mt-3">
+                <div class="form-group">
+                  <label for="status">Document Status *</label>
+                  <select id="status" required>
+                    <option value="draft">Draft</option>
+                    <option value="finalized">Finalized</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="isGstEnabled">Enable GST (18%)</label>
+                  <div class="toggle-container" style="padding-top: 6px;">
+                    <label class="switch">
+                      <input type="checkbox" id="isGstEnabled" checked>
+                      <span class="slider round"></span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Section 2: Customer / Client Details -->
+            <div class="form-card-inner mb-4">
+              <h4 class="card-inner-title"><i class="fa-solid fa-user-tie"></i> 2. Customer / Client Info</h4>
+              <div class="form-group">
+                <label for="clientName">Customer Name *</label>
+                <input type="text" id="clientName" placeholder="e.g. GreenEarth Farms Ltd" required />
+              </div>
+              <div class="form-grid cols-2 mt-3">
+                <div class="form-group">
+                  <label for="clientPhone">Phone Number</label>
+                  <input type="text" id="clientPhone" placeholder="+91 9826012345" />
+                </div>
+                <div class="form-group">
+                  <label for="clientAddress">Billing / Shipping Address</label>
+                  <textarea id="clientAddress" rows="2" placeholder="Full address details"></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- Section 3: Company Metadata (Advanced Settings) -->
+            <details class="advanced-details mb-4">
+              <summary><i class="fa-solid fa-building"></i> 3. Company Details (Sender Corporate Defaults)</summary>
+              <div class="form-card-inner mt-2">
+                <div class="form-group">
+                  <label for="companyName">Company Name *</label>
+                  <input type="text" id="companyName" value="KRISHIKRANTI ORGANICS" required />
+                </div>
+                <div class="form-grid cols-2 mt-3">
+                  <div class="form-group">
+                    <label for="companyGst">GSTIN</label>
+                    <input type="text" id="companyGst" value="23ABEFK9255G1Z9" />
+                  </div>
+                  <div class="form-group">
+                    <label for="companyState">State Code</label>
+                    <input type="text" id="companyState" value="23-Madhya Pradesh" />
+                  </div>
+                </div>
+                <div class="form-grid cols-2 mt-3">
+                  <div class="form-group">
+                    <label for="companyPhone">Phone</label>
+                    <input type="text" id="companyPhone" value="9399022060" />
+                  </div>
+                  <div class="form-group">
+                    <label for="companyEmail">Email</label>
+                    <input type="email" id="companyEmail" value="krishikrantiorganics@gmail.com" />
+                  </div>
+                </div>
+                <div class="form-group mt-3">
+                  <label for="companyAddress">Company Address</label>
+                  <textarea id="companyAddress" rows="2">EWS - 101, The Bellaire Appartment, Gondermau Gandhi Nagar, Bhopal 462036, Madhya Pradesh</textarea>
+                </div>
+              </div>
+            </details>
+
+            <!-- Section 4: Line Items Table -->
+            <div class="form-card-inner mb-4">
+              <div class="items-header">
+                <h4 class="card-inner-title mb-0"><i class="fa-solid fa-boxes-stacked"></i> 4. Line Items</h4>
+                <button type="button" class="btn btn-secondary btn-sm" id="btnAddItem">
+                  <i class="fa-solid fa-plus"></i> Add Item Row
+                </button>
+              </div>
+
+              <div class="table-responsive mt-3">
+                <table class="items-table" id="itemsTable">
+                  <thead>
+                    <tr>
+                      <th style="width: 32%;">Item / Service Name *</th>
+                      <th style="width: 13%;">Qty *</th>
+                      <th style="width: 14%;">Unit</th>
+                      <th style="width: 15%;">Rate (₹) *</th>
+                      <th style="width: 11%;">GST %</th>
+                      <th style="width: 15%;">Amount (₹)</th>
+                      <th style="width: 5%;"></th>
+                    </tr>
+                  </thead>
+                  <tbody id="itemsTableBody">
+                    <!-- Dynamic Item Rows -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Section 5: Terms & Calculation Summary -->
+            <div class="form-card-inner">
+              <h4 class="card-inner-title"><i class="fa-solid fa-file-contract"></i> 5. Terms & Summary</h4>
+              <div class="form-group">
+                <label for="estimateNotes">Terms & Conditions / Notes</label>
+                <textarea id="estimateNotes" rows="3">Quotations valid for 15 days.</textarea>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- RIGHT PANEL: Real-time Live Preview (A4 Paper View) -->
+        <div class="studio-preview-panel">
+          <div class="preview-paper-wrapper">
+            <div class="printable-area" id="livePreviewContainer">
+              <!-- Live preview HTML rendered here -->
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
