@@ -1029,7 +1029,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const data = await res.json();
       btnSaveDraft.disabled = false;
-      btnSaveDraft.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Save Draft`;
+      btnSaveDraft.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Save`;
 
       if (data.success) {
         if (data.estimate && data.estimate._id) {
