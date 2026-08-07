@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Estimate Generator - KD Pannel Quotations</title>
+  <title>Tax Invoice Generator - KD Pannel</title>
   <!-- Google Fonts: Outfit & Font Awesome Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,8 +20,8 @@
           <i class="fa-solid fa-chevron-left"></i>
         </button>
         <div class="kd-title-group">
-          <h1 id="headerTitle">Estimate History</h1>
-          <p id="headerSubtitle">Manage and edit created quotation estimates</p>
+          <h1 id="headerTitle">Invoice History</h1>
+          <p id="headerSubtitle">Manage and edit created tax invoices</p>
         </div>
       </div>
       <div class="kd-header-right">
@@ -30,7 +30,7 @@
         </div>
         <!-- History Action -->
         <button class="btn-kd btn-kd-red" id="btnNewEstimate">
-          <i class="fa-solid fa-plus"></i> Create Estimate
+          <i class="fa-solid fa-plus"></i> Create Invoice
         </button>
         <!-- Studio Actions (Hidden in History mode) -->
         <div class="studio-header-actions" id="studioHeaderActions" style="display: none; gap: 12px; align-items: center;">
@@ -50,11 +50,11 @@
       <section class="kd-search-card">
         <div class="kd-search-inner">
           <i class="fa-solid fa-magnifying-glass search-icon"></i>
-          <input type="text" id="searchInput" placeholder="Search by Customer, Estimate No, or Phone..." />
+          <input type="text" id="searchInput" placeholder="Search by Customer, Invoice No, or Phone..." />
           <button class="btn-clear-search" id="btnClearSearch" style="display: none;"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="kd-filter-pills">
-          <button class="kd-pill active" data-status="all">All Quotes</button>
+          <button class="kd-pill active" data-status="all">All Invoices</button>
           <button class="kd-pill" data-status="draft">Drafts</button>
           <button class="kd-pill" data-status="finalized">Finalized</button>
         </div>
@@ -63,14 +63,14 @@
       <!-- History Table / Cards -->
       <section class="kd-table-card">
         <div class="kd-table-header">
-          <h2><i class="fa-solid fa-list-check" style="color: #C21820;"></i> Created Quotations</h2>
+          <h2><i class="fa-solid fa-list-check" style="color: #C21820;"></i> Created Invoices</h2>
           <span class="kd-count-badge" id="recordsCount">0 Records</span>
         </div>
         <div class="table-responsive">
           <table class="kd-data-table">
             <thead>
               <tr>
-                <th>Estimate No</th>
+                <th>Invoice No</th>
                 <th>Date</th>
                 <th>Customer Name</th>
                 <th>Phone</th>
@@ -84,7 +84,7 @@
               <tr>
                 <td colspan="8" class="text-center py-5">
                   <div class="kd-spinner"></div>
-                  <p style="margin-top: 10px; color: #64748b;">Loading estimates...</p>
+                  <p style="margin-top: 10px; color: #64748b;">Loading invoices...</p>
                 </td>
               </tr>
             </tbody>
@@ -93,7 +93,7 @@
       </section>
     </main>
 
-    <!-- VIEW 2: Full-Screen Estimate Generator Studio (Split 4:5 View) -->
+    <!-- VIEW 2: Full-Screen Studio (Split 4:5 View) -->
     <div class="kd-studio-view" id="studioView" style="display: none;">
       <div class="kd-studio-split">
         <!-- LEFT COLUMN: Form Editor (Flex 4) -->
@@ -101,13 +101,13 @@
           <form id="studioForm" onsubmit="return false;">
             <input type="hidden" id="estimateId" value="" />
 
-            <!-- 1. Estimate Metadata -->
+            <!-- 1. Invoice Metadata -->
             <div class="kd-form-section">
-              <h3 class="kd-section-title"><i class="fa-solid fa-hashtag"></i> 1. Estimate Metadata</h3>
+              <h3 class="kd-section-title"><i class="fa-solid fa-hashtag"></i> 1. Invoice Metadata</h3>
               <div class="kd-form-grid cols-2">
                 <div class="kd-field">
-                  <label for="estimateNo">Estimate Number</label>
-                  <input type="text" id="estimateNo" placeholder="e.g. EBS/25-26/EST/02689" />
+                  <label for="estimateNo">Invoice Number</label>
+                  <input type="text" id="estimateNo" placeholder="e.g. EBS/25-26/INV/02689" />
                 </div>
                 <div class="kd-field">
                   <label for="estimateDate">Date (DD/MM/YYYY)</label>

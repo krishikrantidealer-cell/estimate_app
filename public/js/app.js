@@ -814,20 +814,20 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         </div>
         
-        <!-- Client Section & Estimate Title/No/Date -->
+        <!-- Client Section & Invoice Title/No/Date -->
         <div class="client-section-exact">
           <div class="client-info-block-exact">
-            <div class="section-label-exact">Estimate For:</div>
+            <div class="section-label-exact">Billed To:</div>
             <div class="client-name-exact">${clientName}</div>
             <div class="client-address-exact">${clientAddress ? clientAddress.replace(/\n/g, '<br>') : 'N/A'}</div>
             <div class="client-contact-exact">Contact No.: ${clientPhone}</div>
           </div>
           
           <div class="estimate-title-block-exact">
-            <h2>Estimate</h2>
+            <h2>Tax Invoice</h2>
             <table class="meta-details-table-exact">
               <tr>
-                <td class="label">Estimate No.:</td>
+                <td class="label">Invoice No.:</td>
                 <td class="value bold" style="color: #111827;">${estimateNo}</td>
               </tr>
               <tr>
@@ -868,7 +868,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <!-- Summary Section -->
         <div class="summary-section-exact">
           <div class="amount-words-exact">
-            <div class="amount-words-title-exact">Estimate Amount In Words</div>
+            <div class="amount-words-title-exact">Invoice Amount In Words</div>
             <div class="amount-words-text-exact">${grandTotalWords}</div>
           </div>
           
@@ -932,8 +932,8 @@ document.addEventListener('DOMContentLoaded', () => {
     itemsTableBody.innerHTML = '';
 
     if (estimateData) {
-      headerTitle.textContent = 'Estimate Generator';
-      headerSubtitle.textContent = 'Design custom quotations, view live preview & download PDF';
+      headerTitle.textContent = 'Invoice Generator';
+      headerSubtitle.textContent = 'Design custom tax invoices, view live preview & download PDF';
       btnHeaderBack.style.display = 'flex';
       btnNewEstimate.style.display = 'none';
       studioHeaderActions.style.display = 'flex';
@@ -962,8 +962,8 @@ document.addEventListener('DOMContentLoaded', () => {
         addItemRow();
       }
     } else {
-      headerTitle.textContent = 'Estimate Generator';
-      headerSubtitle.textContent = 'Design custom quotations, view live preview & download PDF';
+      headerTitle.textContent = 'Invoice Generator';
+      headerSubtitle.textContent = 'Design custom tax invoices, view live preview & download PDF';
       btnHeaderBack.style.display = 'flex';
       btnNewEstimate.style.display = 'none';
       studioHeaderActions.style.display = 'flex';
@@ -971,7 +971,7 @@ document.addEventListener('DOMContentLoaded', () => {
       studioForm.reset();
       
       const randomNo = Math.floor(1000 + Math.random() * 9000);
-      document.getElementById('estimateNo').value = `EBS/25-26/EST/0${randomNo}`;
+      document.getElementById('estimateNo').value = `EBS/25-26/INV/0${randomNo}`;
       document.getElementById('estimateDate').value = new Date().toISOString().split('T')[0];
       if (isGstEnabledCheckbox) isGstEnabledCheckbox.checked = true;
 
@@ -992,8 +992,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function showHistoryView() {
-    headerTitle.textContent = 'Estimate History';
-    headerSubtitle.textContent = 'Manage and edit created quotation estimates';
+    headerTitle.textContent = 'Invoice History';
+    headerSubtitle.textContent = 'Manage and edit created tax invoices';
     btnHeaderBack.style.display = 'none';
     btnNewEstimate.style.display = 'inline-flex';
     studioHeaderActions.style.display = 'none';
