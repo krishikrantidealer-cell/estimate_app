@@ -849,6 +849,17 @@ document.addEventListener('DOMContentLoaded', () => {
             ${isGstOn ? `<p>GSTIN: ${companyGst}</p>` : ''}
             <p>State: ${companyState}</p>
           </div>
+        </div>
+        
+        <!-- Client Section & Estimate Title/No/Date -->
+        <div class="client-section-exact">
+          <div class="client-info-block-exact">
+            <div class="section-label-exact">Estimate For:</div>
+            <div class="client-name-exact">${clientName}</div>
+            <div class="client-address-exact">${clientAddress ? clientAddress.replace(/\n/g, '<br>') : 'N/A'}</div>
+            <div class="client-contact-exact">Contact No.: ${clientPhone}</div>
+          </div>
+          
           <div class="estimate-title-block-exact">
             <h2>Estimate</h2>
             <table class="meta-details-table-exact">
@@ -861,16 +872,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td class="value">${date}</td>
               </tr>
             </table>
-          </div>
-        </div>
-        
-        <!-- Client Section -->
-        <div class="client-section-exact">
-          <div class="client-info-block-exact">
-            <div class="section-label-exact">Estimate For:</div>
-            <div class="client-name-exact">${clientName}</div>
-            <div class="client-address-exact">${clientAddress ? clientAddress.replace(/\n/g, '<br>') : 'N/A'}</div>
-            <div class="client-contact-exact">Contact No.: ${clientPhone}</div>
           </div>
         </div>
         
