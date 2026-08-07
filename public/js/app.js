@@ -456,14 +456,17 @@ document.addEventListener('DOMContentLoaded', () => {
           font-family: 'Outfit', sans-serif;
           margin: 0 auto;
           padding: 30px;
+          padding-top: 0;
           color: #111827;
           background-color: #fff;
           max-width: 900px;
+          width: 100%;
           border: 1px solid #e5e7eb;
           border-radius: 12px;
           box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
           position: relative;
           box-sizing: border-box;
+          overflow: hidden;
         }
 
         .header-banner-exact {
@@ -473,12 +476,12 @@ document.addEventListener('DOMContentLoaded', () => {
           align-items: stretch;
           height: 75px;
           position: absolute;
-          top: 30px;
-          right: 30px;
-          width: 80%;
-          border-radius: 0 4px 0 100px;
+          top: 0;
+          right: 0;
+          width: 82%;
+          border-radius: 0 0 0 100px;
           z-index: 2;
-          padding-left: 50px;
+          padding-left: 60px;
           box-sizing: border-box;
         }
         
@@ -492,7 +495,7 @@ document.addEventListener('DOMContentLoaded', () => {
           justify-content: center;
           padding: 0;
           width: 110px;
-          height: 70px;
+          height: 60px;
           z-index: 10;
         }
         
@@ -544,10 +547,10 @@ document.addEventListener('DOMContentLoaded', () => {
         .company-info-wave-exact {
           background-color: #1A2536;
           color: #ffffff;
-          padding: 85px 50px 8px 30px;
+          padding: 85px 40px 14px 30px;
           border-radius: 0 0 100px 0;
           margin-left: -30px;
-          width: 55%;
+          width: calc(55% + 30px);
           height: 100%;
           box-sizing: border-box;
           box-shadow: 0 2px 4px rgba(0,0,0,0.05);
