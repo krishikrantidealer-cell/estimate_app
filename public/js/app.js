@@ -965,12 +965,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // 6. Save Estimate
-  async function saveEstimateFromStudio() {
+  async function saveEstimateFromStudio(options = { goBack: true }) {
     const clientNameVal = document.getElementById('clientName').value.trim();
     if (!clientNameVal) {
       alert('Please enter customer name');
       document.getElementById('clientName').focus();
-      return;
+      return false;
     }
 
     const isGstOn = isGstEnabledCheckbox ? isGstEnabledCheckbox.checked : true;
@@ -993,7 +993,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (items.length === 0) {
       alert('Please enter at least one line item with a name.');
-      return;
+      return false;
     }
 
     const payload = {
@@ -1032,15 +1032,27 @@ document.addEventListener('DOMContentLoaded', () => {
       btnSaveDraft.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Save Draft`;
 
       if (data.success) {
-        showHistoryView();
+        if (data.estimate && data.estimate._id) {
+          activeEditingId = data.estimate._id;
+          estimateIdInput.value = data.estimate._id;
+          if (data.estimate.estimateNo) {
+            document.getElementById('estimateNo').value = data.estimate.estimateNo;
+          }
+        }
+        if (options.goBack) {
+          showHistoryView();
+        }
+        return true;
       } else {
         alert(`Error saving estimate: ${data.message}`);
+        return false;
       }
     } catch (err) {
       btnSaveDraft.disabled = false;
       btnSaveDraft.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Save Draft`;
       console.error('Error submitting form:', err);
       alert('Failed to save estimate.');
+      return false;
     }
   }
 
@@ -1073,9 +1085,20 @@ document.addEventListener('DOMContentLoaded', () => {
   // Event Listeners
   btnNewEstimate.addEventListener('click', () => openStudioView());
   btnHeaderBack.addEventListener('click', showHistoryView);
-  btnSaveDraft.addEventListener('click', saveEstimateFromStudio);
+  btnSaveDraft.addEventListener('click', () => saveEstimateFromStudio({ goBack: true }));
   
-  btnPrintStudio.addEventListener('click', () => {
+  btnPrintStudio.addEventListener('click', async () => {
+    // ALWAYS Save estimate to MongoDB database FIRST!
+    btnPrintStudio.disabled = true;
+    btnPrintStudio.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Saving...`;
+
+    const saved = await saveEstimateFromStudio({ goBack: false });
+
+    btnPrintStudio.disabled = false;
+    btnPrintStudio.innerHTML = `<i class="fa-solid fa-download"></i> Download / Print`;
+
+    if (!saved) return;
+
     const previewHtml = livePreviewContainer.innerHTML;
     const estNo = document.getElementById('estimateNo').value.trim() || 'Quotation';
 
