@@ -103,6 +103,12 @@ body {
   gap: 14px;
 }
 
+.studio-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .db-status-pill {
   display: flex;
   align-items: center;
