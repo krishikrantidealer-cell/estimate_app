@@ -158,20 +158,19 @@ document.addEventListener('DOMContentLoaded', () => {
     fetch('/api/health').catch(() => {});
   }, 8 * 60 * 1000);
 
+  // Master estimate storage for 0ms instant client-side searching & tab filtering
+  let allEstimates = [];
+
   // 2. Fetch Estimates History
   async function loadEstimates() {
     try {
-      let url = `/api/estimates?status=${currentFilterStatus}`;
-      if (currentSearchQuery.trim()) {
-        url += `&search=${encodeURIComponent(currentSearchQuery.trim())}`;
-      }
-
-      const res = await fetch(url);
+      // Fetch all records from backend
+      const res = await fetch('/api/estimates');
       const data = await res.json();
 
       if (data.success) {
-        estimates = data.estimates || [];
-        renderTable(estimates);
+        allEstimates = data.estimates || [];
+        applyFiltersAndRender();
       } else {
         showTableError(data.message || 'Failed to load estimates');
       }
@@ -179,6 +178,33 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error('Fetch error:', err);
       showTableError('Network error connecting to backend API');
     }
+  }
+
+  // Instant 0ms Filter & Search Engine
+  function applyFiltersAndRender() {
+    let filtered = [...allEstimates];
+
+    // Filter by Tab Status (All, Drafts, Finalized)
+    if (currentFilterStatus && currentFilterStatus !== 'all') {
+      filtered = filtered.filter(e => {
+        const s = (e.status || 'draft').toLowerCase();
+        return s === currentFilterStatus.toLowerCase();
+      });
+    }
+
+    // Filter by Search Query
+    if (currentSearchQuery && currentSearchQuery.trim()) {
+      const q = currentSearchQuery.trim().toLowerCase();
+      filtered = filtered.filter(e => {
+        const estNo = (e.estimateNo || '').toLowerCase();
+        const client = (e.clientName || '').toLowerCase();
+        const phone = (e.clientPhone || '').toLowerCase();
+        const company = (e.companyName || '').toLowerCase();
+        return estNo.includes(q) || client.includes(q) || phone.includes(q) || company.includes(q);
+      });
+    }
+
+    renderTable(filtered);
   }
 
   function renderTable(dataList) {
@@ -189,7 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <tr>
           <td colspan="8" class="text-center py-5" style="color: var(--kd-text-muted);">
             <i class="fa-solid fa-folder-open" style="font-size: 32px; margin-bottom: 8px; display: block; color: #cbd5e1;"></i>
-            No estimates found. Click "Create Estimate" above to start a new quotation.
+            No estimates found matching your filters.
           </td>
         </tr>
       `;
@@ -1193,21 +1219,17 @@ document.addEventListener('DOMContentLoaded', () => {
   btnAddItem.addEventListener('click', () => addItemRow());
 
   // Search input debouncing
-  let searchTimeout;
   searchInput.addEventListener('input', (e) => {
     currentSearchQuery = e.target.value;
     btnClearSearch.style.display = currentSearchQuery ? 'block' : 'none';
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(() => {
-      loadEstimates();
-    }, 300);
+    applyFiltersAndRender();
   });
 
   btnClearSearch.addEventListener('click', () => {
     searchInput.value = '';
     currentSearchQuery = '';
     btnClearSearch.style.display = 'none';
-    loadEstimates();
+    applyFiltersAndRender();
   });
 
   // Filter Pills
@@ -1216,7 +1238,7 @@ document.addEventListener('DOMContentLoaded', () => {
       filterPills.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       currentFilterStatus = btn.dataset.status;
-      loadEstimates();
+      applyFiltersAndRender();
     });
   });
 

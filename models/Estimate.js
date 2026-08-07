@@ -44,6 +44,11 @@ const estimateSchema = new mongoose.Schema({
   timestamps: true
 });
 
+// Indexes for ultra-fast database query performance
+estimateSchema.index({ status: 1, createdAt: -1 });
+estimateSchema.index({ clientName: 1 });
+estimateSchema.index({ clientPhone: 1 });
+
 const Estimate = mongoose.model('Estimate', estimateSchema);
 
 module.exports = Estimate;
