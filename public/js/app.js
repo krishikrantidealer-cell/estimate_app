@@ -1,6 +1,6 @@
 /**
  * ESTIMATE PRO - MAIN FRONTEND APP LOGIC
- * Full-Screen Split Studio View & Real-Time Live Preview Engine
+ * Exact mirror of Flutter export_helper_web.dart & estimate_generator_page.dart
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -45,16 +45,36 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnAddItem = document.getElementById('btnAddItem');
   const livePreviewContainer = document.getElementById('livePreviewContainer');
 
-  // Utility: Format Currency (INR)
-  function formatCurrency(amount) {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 2
-    }).format(amount || 0);
+  // Exact Currency Formatter from export_helper_web.dart (Indian Numbering System)
+  function formatCurrency(value) {
+    if (value === undefined || value === null || isNaN(value)) return '₹ 0.00';
+    const stringValue = Number(value).toFixed(2);
+    const parts = stringValue.split('.');
+    let integerPart = parts[0];
+    const decimalPart = parts[1];
+
+    if (integerPart.length <= 3) {
+      return '₹ ' + integerPart + '.' + decimalPart;
+    }
+
+    const lastThree = integerPart.substring(integerPart.length - 3);
+    const remaining = integerPart.substring(0, integerPart.length - 3);
+
+    let formattedRemaining = '';
+    let count = 0;
+    for (let i = remaining.length - 1; i >= 0; i--) {
+      formattedRemaining = remaining[i] + formattedRemaining;
+      count++;
+      if (count === 2 && i > 0) {
+        formattedRemaining = ',' + formattedRemaining;
+        count = 0;
+      }
+    }
+
+    return '₹ ' + formattedRemaining + ',' + lastThree + '.' + decimalPart;
   }
 
-  // Convert Number to Words (Rupees & Paise)
+  // Exact Number to Words from export_helper_web.dart
   function numberToWords(amount) {
     if (!amount || amount === 0) return 'Zero Rupees only';
 
@@ -255,7 +275,6 @@ document.addEventListener('DOMContentLoaded', () => {
       </td>
     `;
 
-    // Real-time recalculation and live preview trigger
     const inputs = tr.querySelectorAll('.item-name, .item-qty, .item-unit, .item-price, .item-gst');
     inputs.forEach(input => {
       input.addEventListener('input', () => {
@@ -291,7 +310,7 @@ document.addEventListener('DOMContentLoaded', () => {
     row.querySelector('.item-amount').value = totalAmount.toFixed(2);
   }
 
-  // 4. Real-Time Live Preview Renderer (Right Column Studio Panel)
+  // 4. Exact HTML Generator matching export_helper_web.dart
   function updateLivePreview() {
     const isGstOn = isGstEnabledCheckbox ? isGstEnabledCheckbox.checked : true;
 
@@ -300,152 +319,210 @@ document.addEventListener('DOMContentLoaded', () => {
     const companyState = document.getElementById('companyState').value.trim() || '23-Madhya Pradesh';
     const companyPhone = document.getElementById('companyPhone').value.trim() || '9399022060';
     const companyEmail = document.getElementById('companyEmail').value.trim() || 'krishikrantiorganics@gmail.com';
-    const companyAddress = document.getElementById('companyAddress').value.trim() || 'EWS - 101, The Bellaire Appartment, Gondermau Gandhi Nagar, Bhopal 462036';
+    const companyAddress = document.getElementById('companyAddress').value.trim() || 'EWS - 101, The Bellaire Appartment, Gondermau Gandhi Nagar, Bhopal 462036, Madhya Pradesh';
 
-    const estimateNo = document.getElementById('estimateNo').value.trim() || 'EBS/26-27/EST/PREVIEW';
-    const estimateDate = document.getElementById('estimateDate').value || new Date().toISOString().split('T')[0];
-    const status = document.getElementById('status').value || 'draft';
+    const estimateNo = document.getElementById('estimateNo').value.trim() || 'EBS/25-26/EST/02689';
+    const date = document.getElementById('estimateDate').value || new Date().toLocaleDateString('en-GB');
 
     const clientName = document.getElementById('clientName').value.trim() || 'Customer Name (Type in left panel)';
     const clientPhone = document.getElementById('clientPhone').value.trim() || '-';
     const clientAddress = document.getElementById('clientAddress').value.trim() || 'Customer Address';
-    const notes = document.getElementById('estimateNotes').value.trim() || '';
 
-    // Collect Items
-    let subtotal = 0;
-    let totalGst = 0;
-    let totalQty = 0;
+    let baseSubtotal = 0.0;
+    let gstTotal = 0.0;
+    let totalQuantity = 0;
+
     const rows = itemsTableBody.querySelectorAll('.item-row');
-
-    const itemsHtml = Array.from(rows).map((row, idx) => {
-      const name = row.querySelector('.item-name').value.trim() || `Item #${idx + 1}`;
-      const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+    const tableRows = Array.from(rows).map((row, i) => {
+      const name = row.querySelector('.item-name').value.trim() || `Item #${i + 1}`;
+      const qty = parseInt(row.querySelector('.item-qty').value) || 0;
       const unit = row.querySelector('.item-unit').value.trim() || 'liter';
       const price = parseFloat(row.querySelector('.item-price').value) || 0;
       const gstInput = row.querySelector('.item-gst');
+
       if (!isGstOn) {
         gstInput.disabled = true;
       } else {
         gstInput.disabled = false;
       }
-      const gstPct = isGstOn ? (parseFloat(gstInput.value) || 0) : 0;
+      const gst = isGstOn ? (parseFloat(gstInput.value) || 0) : 0;
 
-      const baseAmount = qty * price;
-      const gstAmount = (baseAmount * gstPct) / 100;
-      const rowTotal = baseAmount + gstAmount;
+      const subtotal = price * qty;
+      const gstAmt = subtotal * (gst / 100);
+      const amt = subtotal + gstAmt;
 
-      subtotal += baseAmount;
-      totalGst += gstAmount;
-      totalQty += qty;
+      baseSubtotal += subtotal;
+      gstTotal += gstAmt;
+      totalQuantity += qty;
+
+      const isOdd = i % 2 === 1;
+      const rowClass = isOdd ? 'class="alternate-row"' : '';
 
       return `
-        <tr>
-          <td style="padding: 8px 10px; border-bottom: 1px solid #e2e8f0;">${idx + 1}</td>
-          <td style="padding: 8px 10px; border-bottom: 1px solid #e2e8f0;"><strong>${name}</strong></td>
-          <td style="padding: 8px 10px; border-bottom: 1px solid #e2e8f0;">${qty} ${unit}</td>
-          <td style="padding: 8px 10px; border-bottom: 1px solid #e2e8f0;">₹${price.toFixed(2)}</td>
-          <td style="padding: 8px 10px; border-bottom: 1px solid #e2e8f0;">${isGstOn ? gstPct + '%' : '0%'}</td>
-          <td style="padding: 8px 10px; border-bottom: 1px solid #e2e8f0; text-align: right;">₹${rowTotal.toFixed(2)}</td>
+        <tr ${rowClass}>
+          <td class="center" style="text-align: center; padding: 12px 14px; border: 1px solid #E5E7EB;">${i + 1}</td>
+          <td class="bold" style="font-weight: 700; color: #111827; padding: 12px 14px; border: 1px solid #E5E7EB;">${name}</td>
+          <td class="center" style="text-align: center; padding: 12px 14px; border: 1px solid #E5E7EB;">${qty}</td>
+          <td class="center" style="text-align: center; padding: 12px 14px; border: 1px solid #E5E7EB;">${unit}</td>
+          <td class="num" style="text-align: right; padding: 12px 14px; border: 1px solid #E5E7EB;">${formatCurrency(price)}</td>
+          ${isGstOn ? `<td class="center" style="text-align: center; padding: 12px 14px; border: 1px solid #E5E7EB;">${gst.toFixed(0)}%</td>` : ''}
+          <td class="num" style="text-align: right; padding: 12px 14px; border: 1px solid #E5E7EB;">${formatCurrency(amt)}</td>
         </tr>
       `;
-    }).join('');
+    }).join('\n');
 
-    const grandTotal = subtotal + (isGstOn ? totalGst : 0);
-    const wordsText = numberToWords(grandTotal);
+    const grandTotal = baseSubtotal + gstTotal;
+    const grandTotalWords = numberToWords(grandTotal);
+
+    const formattedEmail = companyEmail.replace('@', '@<br>');
+    let formattedAddress = companyAddress;
+    if (formattedAddress.includes('Arvind Vihar')) {
+      formattedAddress = formattedAddress
+        .replace('Arvind Vihar, ', 'Arvind Vihar,<br>')
+        .replace('Colony , ', 'Colony ,<br>');
+    } else if (formattedAddress.includes('Bellaire')) {
+      formattedAddress = formattedAddress
+        .replace('Bellaire Appartment, ', 'Bellaire Appartment,<br>')
+        .replace('Gandhi Nagar, ', 'Gandhi Nagar,<br>');
+    }
 
     livePreviewContainer.innerHTML = `
-      <div style="background: #ffffff; padding: 24px; font-family: 'Plus Jakarta Sans', sans-serif; color: #1e293b; border-radius: 6px;">
-        <!-- Header Branding Bar -->
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; border-bottom: 3px solid #c21820; padding-bottom: 16px;">
-          <div>
-            <h2 style="font-size: 22px; font-weight: 800; color: #1e293b; letter-spacing: -0.5px; margin: 0;">${companyName}</h2>
-            <p style="font-size: 11px; color: #475569; margin-top: 4px; max-width: 420px;">${companyAddress}</p>
-            <p style="font-size: 11px; color: #475569;">Ph: ${companyPhone} | Email: ${companyEmail}</p>
-            ${isGstOn ? `<p style="font-size: 11px; color: #1e293b; font-weight: 600;">GSTIN: ${companyGst} | State: ${companyState}</p>` : ''}
+      <div class="quotation-export-container" style="max-width: 900px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; padding: 30px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); background: #ffffff; color: #111827; position: relative; font-family: 'Plus Jakarta Sans', sans-serif;">
+        <!-- Top Red Header Banner -->
+        <div class="header-banner" style="background-color: #C21820; color: #ffffff; display: flex; align-items: stretch; height: 75px; position: absolute; top: 30px; right: 30px; width: 75%; border-radius: 0 4px 0 100px; z-index: 2; padding-left: 50px; box-sizing: border-box;">
+          <div class="contact-col" style="display: flex; align-items: center; padding: 12px 14px; flex-grow: 1;">
+            <div class="contact-item" style="display: flex; align-items: center; gap: 8px;">
+              <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; fill: #ffffff; flex-shrink: 0;"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+              <span class="contact-text" style="font-size: 11px; font-weight: 500; line-height: 1.3;">${companyPhone}</span>
+            </div>
           </div>
-          <div style="text-align: right;">
-            <div style="background: #c21820; color: #ffffff; padding: 5px 16px; border-radius: 4px; display: inline-block; font-size: 16px; font-weight: 800; letter-spacing: 1px;">QUOTATION</div>
-            <div style="font-size: 12px; font-weight: 700; color: #1e293b; margin-top: 6px;">Est No: <span style="color: #2563eb;">${estimateNo}</span></div>
-            <div style="font-size: 11px; color: #64748b;">Date: ${estimateDate}</div>
-            <div style="font-size: 11px; color: #64748b; text-transform: uppercase;">Status: <strong>${status}</strong></div>
+          <div class="contact-col border-left" style="display: flex; align-items: center; padding: 12px 14px; flex-grow: 1; border-left: 1px solid rgba(255, 255, 255, 0.4);">
+            <div class="contact-item" style="display: flex; align-items: center; gap: 8px;">
+              <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; fill: #ffffff; flex-shrink: 0;"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+              <span class="contact-text" style="font-size: 11px; font-weight: 500; line-height: 1.3;">${formattedEmail}</span>
+            </div>
+          </div>
+          <div class="contact-col border-left" style="display: flex; align-items: center; padding: 12px 14px; flex-grow: 1; border-left: 1px solid rgba(255, 255, 255, 0.4);">
+            <div class="contact-item" style="display: flex; align-items: center; gap: 8px;">
+              <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; fill: #ffffff; flex-shrink: 0;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+              <span class="contact-text" style="font-size: 10px; font-weight: 500; line-height: 1.3;">${formattedAddress}</span>
+            </div>
           </div>
         </div>
 
-        <!-- Billed To Box -->
-        <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 12px 16px; margin-bottom: 18px;">
-          <h4 style="font-size: 10px; text-transform: uppercase; color: #64748b; font-weight: 700; margin: 0 0 4px 0;">CUSTOMER DETAILS (BILLED TO)</h4>
-          <strong style="font-size: 15px; color: #0f172a;">${clientName}</strong>
-          <p style="font-size: 12px; color: #334155; margin-top: 2px;">${clientAddress ? clientAddress.replace(/\n/g, '<br>') : 'N/A'}</p>
-          <p style="font-size: 11px; color: #475569; margin-top: 2px;">Ph: ${clientPhone}</p>
+        <!-- Meta Section & Dark Navy Wave -->
+        <div class="meta-section" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; position: relative; height: 140px;">
+          <div class="company-info-wave" style="background-color: #1A2536; color: #ffffff; padding: 50px 40px 12px 24px; border-radius: 0 0 100px 0; margin-left: -30px; width: 60%; box-sizing: border-box; position: relative;">
+            <div class="logo-box" style="position: absolute; top: 10px; left: 24px; display: flex; align-items: center; justify-content: center; width: 100px; height: 50px; z-index: 10;">
+              <span class="logo-text" style="color: #C21820; font-weight: 800; font-size: 22px; letter-spacing: 0.5px;">EBS</span>
+            </div>
+            <h1 style="margin: 0 0 4px 0; font-size: 18px; font-weight: 700; color: #ffffff;">${companyName}</h1>
+            ${isGstOn ? `<p style="margin: 2px 0; font-size: 11px; color: #E2E8F0; opacity: 0.9;">GSTIN: ${companyGst}</p>` : ''}
+            <p style="margin: 2px 0; font-size: 11px; color: #E2E8F0; opacity: 0.9;">State: ${companyState}</p>
+          </div>
+
+          <div class="estimate-title-block" style="text-align: left; padding-right: 10px;">
+            <h2 style="margin: 0 0 10px 0; font-size: 26px; font-weight: 700; color: #111827; letter-spacing: -0.5px;">Estimate</h2>
+            <table class="meta-details-table" style="border-collapse: collapse;">
+              <tr>
+                <td class="label" style="font-weight: 700; color: #374151; padding: 4px 8px 4px 0; font-size: 13px;">Estimate No.:</td>
+                <td class="value bold" style="font-weight: 700; color: #111827; font-size: 13px;">${estimateNo}</td>
+              </tr>
+              <tr>
+                <td class="label" style="font-weight: 700; color: #374151; padding: 4px 8px 4px 0; font-size: 13px;">Date:</td>
+                <td class="value" style="font-weight: 700; color: #111827; font-size: 13px;">${date}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- Client Section -->
+        <div class="client-section" style="margin-bottom: 30px; display: flex; justify-content: space-between;">
+          <div class="client-info-block" style="max-width: 65%;">
+            <div class="section-label" style="color: #C21820; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Estimate For:</div>
+            <div class="client-name" style="font-size: 18px; font-weight: 800; color: #000000; margin: 0 0 6px 0; text-transform: capitalize;">${clientName}</div>
+            <div class="client-address" style="font-size: 13px; color: #4B5563; line-height: 1.5; margin: 0 0 8px 0;">${clientAddress ? clientAddress.replace(/\n/g, '<br>') : 'N/A'}</div>
+            <div class="client-contact" style="font-size: 13px; color: #374151; font-weight: 700;">Contact No.: ${clientPhone}</div>
+          </div>
         </div>
 
         <!-- Items Table -->
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 18px;">
+        <table class="items-table" style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
           <thead>
-            <tr style="background: #1e293b; color: #ffffff; font-size: 11px; text-transform: uppercase;">
-              <th style="padding: 8px 10px; text-align: left; width: 5%;">#</th>
-              <th style="padding: 8px 10px; text-align: left; width: 45%;">Item / Product Description</th>
-              <th style="padding: 8px 10px; text-align: left; width: 15%;">Qty</th>
-              <th style="padding: 8px 10px; text-align: left; width: 15%;">Rate (₹)</th>
-              <th style="padding: 8px 10px; text-align: left; width: 10%;">GST %</th>
-              <th style="padding: 8px 10px; text-align: right; width: 10%;">Amount (₹)</th>
+            <tr style="background-color: #C21820; color: #ffffff; font-size: 12px; font-weight: 700; text-transform: uppercase;">
+              <th class="center" style="padding: 10px 14px; border: 1px solid #C21820; width: 5%; text-align: center;">#</th>
+              <th style="padding: 10px 14px; border: 1px solid #C21820; text-align: left; width: ${isGstOn ? '40%' : '51%'}">Item name</th>
+              <th class="center" style="padding: 10px 14px; border: 1px solid #C21820; width: 10%; text-align: center;">Quantity</th>
+              <th class="center" style="padding: 10px 14px; border: 1px solid #C21820; width: 10%; text-align: center;">Unit</th>
+              <th class="num" style="padding: 10px 14px; border: 1px solid #C21820; width: 11%; text-align: right;">Price/Unit</th>
+              ${isGstOn ? '<th class="center" style="padding: 10px 14px; border: 1px solid #C21820; width: 11%; text-align: center;">GST</th>' : ''}
+              <th class="num" style="padding: 10px 14px; border: 1px solid #C21820; width: 13%; text-align: right;">Amount</th>
             </tr>
           </thead>
-          <tbody style="font-size: 12px;">
-            ${itemsHtml}
+          <tbody>
+            ${tableRows}
+            <tr class="total-row" style="background-color: #C21820; color: #ffffff; font-weight: 700;">
+              <td class="center" style="padding: 10px 14px; border: 1px solid #C21820; text-align: center;"></td>
+              <td style="padding: 10px 14px; border: 1px solid #C21820;">TOTAL</td>
+              <td class="center" style="padding: 10px 14px; border: 1px solid #C21820; text-align: center;">${totalQuantity}</td>
+              <td class="center" style="padding: 10px 14px; border: 1px solid #C21820;"></td>
+              <td class="num" style="padding: 10px 14px; border: 1px solid #C21820;"></td>
+              ${isGstOn ? '<td class="center" style="padding: 10px 14px; border: 1px solid #C21820;"></td>' : ''}
+              <td class="num" style="padding: 10px 14px; border: 1px solid #C21820; text-align: right;">${formatCurrency(grandTotal)}</td>
+            </tr>
           </tbody>
         </table>
 
-        <!-- Amount in Words & Totals -->
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;">
-          <div style="flex: 1;">
-            <div style="background: #f1f5f9; border-left: 4px solid #c21820; padding: 10px 14px; border-radius: 4px; font-size: 11px; color: #1e293b;">
-              <span style="font-size: 10px; text-transform: uppercase; color: #64748b; font-weight: 700; display: block;">AMOUNT IN WORDS:</span>
-              <strong style="font-size: 12px; color: #0f172a;">${wordsText}</strong>
-            </div>
-            ${notes ? `
-              <div style="margin-top: 12px; font-size: 11px; color: #475569;">
-                <strong style="color: #1e293b;">Terms & Conditions:</strong>
-                <p style="margin-top: 2px;">${notes.replace(/\n/g, '<br>')}</p>
-              </div>
-            ` : ''}
+        <!-- Summary Section -->
+        <div class="summary-section" style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 15px;">
+          <div class="amount-words" style="max-width: 50%;">
+            <div class="amount-words-title" style="color: #C21820; font-size: 12px; font-weight: 700; text-transform: uppercase; margin-bottom: 4px;">Estimate Amount In Words</div>
+            <div class="amount-words-text" style="font-size: 13px; color: #4B5563; line-height: 1.4;">${grandTotalWords}</div>
           </div>
 
-          <div style="width: 250px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px;">
-            <div style="display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0; color: #475569;">
-              <span>Total Quantity:</span>
-              <strong>${totalQty}</strong>
-            </div>
-            <div style="display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0; color: #475569;">
-              <span>Subtotal:</span>
-              <span>₹${subtotal.toFixed(2)}</span>
-            </div>
-            ${isGstOn ? `
-              <div style="display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0; color: #475569;">
-                <span>Total GST:</span>
-                <span>₹${totalGst.toFixed(2)}</span>
-              </div>
-            ` : ''}
-            <div style="display: flex; justify-content: space-between; font-size: 15px; font-weight: 800; border-top: 2px solid #1e293b; margin-top: 6px; padding-top: 6px; color: #0f172a;">
-              <span>Grand Total:</span>
-              <span style="color: #059669;">₹${grandTotal.toFixed(2)}</span>
-            </div>
+          <div class="totals-box" style="width: 300px;">
+            <table class="totals-table" style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td class="label" style="padding: 8px 14px; font-size: 13px; color: #374151; border: 1px solid #E5E7EB; font-weight: 700;">${isGstOn ? 'Sub Total (Excl. GST)' : 'Total Amount'}</td>
+                <td class="val" style="padding: 8px 14px; font-size: 13px; color: #374151; border: 1px solid #E5E7EB; text-align: right; font-weight: 700;">${formatCurrency(baseSubtotal)}</td>
+              </tr>
+              ${isGstOn ? `
+              <tr>
+                <td class="label" style="padding: 8px 14px; font-size: 13px; color: #374151; border: 1px solid #E5E7EB; font-weight: 700;">GST Total</td>
+                <td class="val" style="padding: 8px 14px; font-size: 13px; color: #374151; border: 1px solid #E5E7EB; text-align: right; font-weight: 700;">${formatCurrency(gstTotal)}</td>
+              </tr>
+              ` : ''}
+              <tr class="grand-total" style="background-color: #C21820; color: #ffffff; font-weight: 700;">
+                <td class="label" style="padding: 8px 14px; font-size: 13px; border: 1px solid #C21820; font-weight: 700;">Grand Total</td>
+                <td class="val" style="padding: 8px 14px; font-size: 13px; border: 1px solid #C21820; text-align: right; font-weight: 700;">${formatCurrency(grandTotal)}</td>
+              </tr>
+            </table>
           </div>
         </div>
 
-        <!-- Signature Block -->
-        <div style="margin-top: 32px; display: flex; justify-content: flex-end;">
-          <div style="text-align: center; width: 200px;">
-            <p style="font-size: 11px; font-weight: 700; color: #1e293b; margin: 0;">For ${companyName}</p>
-            <div style="height: 35px;"></div>
-            <div style="border-top: 1px dashed #94a3b8; padding-top: 4px; font-size: 10px; color: #64748b;">Authorised Signatory</div>
+        <!-- Footer / Signatory -->
+        <div class="footer-section" style="margin-top: 50px; display: flex; justify-content: space-between; align-items: flex-end;">
+          <div class="sign-box" style="text-align: left; width: auto;"></div>
+          <div class="sign-box" style="text-align: center; width: 220px;">
+            <p style="margin: 0; font-size: 12px; color: #374151;">For : ${companyName}</p>
+            <div class="stamp-area" style="height: 80px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px;">
+              <div style="width: 75px; height: 75px; border: 2px dashed rgba(60, 50, 160, 0.4); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: rgba(60, 50, 160, 0.5); font-size: 8px; font-weight: 700; text-transform: uppercase; transform: rotate(-10deg);">
+                SEAL<span style="font-size: 12px; font-weight: 800;">STAMP</span>
+              </div>
+            </div>
+            <div class="signatory-label" style="padding-top: 6px; font-size: 12px; font-weight: 700; color: #111827; text-transform: uppercase; letter-spacing: 0.5px;">Authorized Signatory</div>
           </div>
+        </div>
+
+        <!-- Bottom Accent Bar -->
+        <div class="bottom-accent" style="margin-top: 40px; height: 16px; background-color: #C21820; position: relative; border-radius: 0 0 8px 8px;">
+          <div style="position: absolute; bottom: 0; right: 0; width: 250px; height: 48px; background-color: #1A2536; border-radius: 48px 0 8px 0;"></div>
         </div>
       </div>
     `;
   }
 
-  // Attach real-time input listeners to all form inputs in studio
+  // Attach real-time input listeners to form fields
   const formInputIds = [
     'clientName', 'clientPhone', 'clientAddress',
     'estimateNo', 'estimateDate', 'status', 'isGstEnabled',
