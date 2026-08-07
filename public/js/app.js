@@ -9,21 +9,6 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentFilterStatus = 'all';
   let currentSearchQuery = '';
   let activeEditingId = null;
-  let activeCatalogTargetRowIdx = null;
-
-  // Sample Product Catalog Items matching KrishiKranti inventory
-  const sampleProducts = [
-    { title: 'Organic Bio-Fertilizer (Liquid)', vendor: 'KrishiKranti', size: '1 Liter', unit: 'liter', price: 650, gst: 18 },
-    { title: 'Organic Bio-Fertilizer (Liquid)', vendor: 'KrishiKranti', size: '5 Liters', unit: 'liter', price: 2950, gst: 18 },
-    { title: 'Neem Oil Organic Insecticide (10000 PPM)', vendor: 'KrishiKranti', size: '500 ml', unit: 'liter', price: 480, gst: 18 },
-    { title: 'Neem Oil Organic Insecticide (10000 PPM)', vendor: 'KrishiKranti', size: '1 Liter', unit: 'liter', price: 890, gst: 18 },
-    { title: 'Humic Acid 98% Potassium Humate', vendor: 'KrishiKranti', size: '1 Kg', unit: 'kg', price: 450, gst: 18 },
-    { title: 'Plant Growth Regulator (PGR Concentrate)', vendor: 'KrishiKranti', size: '250 ml', unit: 'liter', price: 720, gst: 18 },
-    { title: 'Micro-Nutrient Mixture (Chelated Zinc, Iron, Boron)', vendor: 'KrishiKranti', size: '1 Kg Bag', unit: 'bag', price: 380, gst: 18 },
-    { title: 'Premium Vermicompost (Organic Soil Enricher)', vendor: 'KrishiKranti', size: '50 Kg Bag', unit: 'bag', price: 600, gst: 5 },
-    { title: 'Bio NPK Complex Biofertilizer', vendor: 'KrishiKranti', size: '1 Liter', unit: 'liter', price: 750, gst: 18 },
-    { title: 'Soil Conditioner Granules', vendor: 'KrishiKranti', size: '10 Kg Bucket', unit: 'PCS', price: 1250, gst: 18 }
-  ];
 
   // DOM Elements - Header & Views
   const mainHeader = document.getElementById('mainHeader');
@@ -56,12 +41,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const itemsTableBody = document.getElementById('itemsTableBody');
   const btnAddItem = document.getElementById('btnAddItem');
   const livePreviewContainer = document.getElementById('livePreviewContainer');
-
-  // Catalog Modal
-  const catalogModal = document.getElementById('catalogModal');
-  const btnCloseCatalogModal = document.getElementById('btnCloseCatalogModal');
-  const catalogSearchInput = document.getElementById('catalogSearchInput');
-  const catalogListContainer = document.getElementById('catalogListContainer');
 
   // Currency Formatter from export_helper_web.dart
   function formatCurrency(value) {
@@ -250,7 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
   }
 
-  // 3. Item Row Generator with "Browse Catalog"
+  // 3. Simple Item Row Generator (Direct typing)
   function addItemRow(item = {}) {
     const tr = document.createElement('tr');
     tr.className = 'item-row';
@@ -259,8 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     tr.innerHTML = `
       <td>
-        <input type="text" class="item-name" placeholder="Product / Service Name" value="${item.name || ''}" required />
-        <button type="button" class="btn-browse-catalog"><i class="fa-solid fa-book-open"></i> Browse Catalog</button>
+        <input type="text" class="item-name" placeholder="Type product / item name..." value="${item.name || ''}" required />
       </td>
       <td>
         <input type="number" class="item-qty" min="1" step="any" placeholder="1" value="${item.quantity || 1}" required />
@@ -290,10 +268,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    tr.querySelector('.btn-browse-catalog').addEventListener('click', () => {
-      openCatalogModal(tr);
-    });
-
     tr.querySelector('.btn-remove-item').addEventListener('click', () => {
       if (itemsTableBody.children.length > 1) {
         tr.remove();
@@ -320,57 +294,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     row.querySelector('.item-amount').value = totalAmount.toFixed(2);
   }
-
-  // Catalog Product Modal Selector
-  function openCatalogModal(rowTr) {
-    activeCatalogTargetRowIdx = rowTr;
-    renderCatalogList('');
-    catalogSearchInput.value = '';
-    catalogModal.style.display = 'flex';
-    catalogSearchInput.focus();
-  }
-
-  function renderCatalogList(query) {
-    const filtered = sampleProducts.filter(p => {
-      const q = query.toLowerCase();
-      return p.title.toLowerCase().includes(q) || p.size.toLowerCase().includes(q) || p.unit.toLowerCase().includes(q);
-    });
-
-    if (filtered.length === 0) {
-      catalogListContainer.innerHTML = `<p class="text-center py-4" style="color: var(--kd-text-muted);">No products found matching "${query}"</p>`;
-      return;
-    }
-
-    catalogListContainer.innerHTML = filtered.map(p => `
-      <div class="kd-catalog-item" onclick="selectCatalogProduct('${p.title} (${p.size})', ${p.price}, '${p.unit}', ${p.gst})">
-        <div>
-          <h5>${p.title}</h5>
-          <p>${p.vendor} • Size: <strong>${p.size}</strong></p>
-        </div>
-        <div class="price-badge">₹ ${p.price}</div>
-      </div>
-    `).join('');
-  }
-
-  window.selectCatalogProduct = function(title, price, unit, gst) {
-    if (activeCatalogTargetRowIdx) {
-      activeCatalogTargetRowIdx.querySelector('.item-name').value = title;
-      activeCatalogTargetRowIdx.querySelector('.item-price').value = price;
-      activeCatalogTargetRowIdx.querySelector('.item-unit').value = unit;
-      activeCatalogTargetRowIdx.querySelector('.item-gst').value = gst;
-      updateRowAmount(activeCatalogTargetRowIdx);
-      updateLivePreview();
-    }
-    catalogModal.style.display = 'none';
-  };
-
-  catalogSearchInput.addEventListener('input', (e) => {
-    renderCatalogList(e.target.value);
-  });
-
-  btnCloseCatalogModal.addEventListener('click', () => {
-    catalogModal.style.display = 'none';
-  });
 
   // 4. Real-time Live Document Preview (1:1 with export_helper_web.dart)
   function updateLivePreview() {
@@ -1007,7 +930,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       studioForm.reset();
       
-      // Generate auto estimate number e.g. EBS/25-26/EST/02689
       const randomNo = Math.floor(1000 + Math.random() * 9000);
       document.getElementById('estimateNo').value = `EBS/25-26/EST/0${randomNo}`;
       document.getElementById('estimateDate').value = new Date().toISOString().split('T')[0];
