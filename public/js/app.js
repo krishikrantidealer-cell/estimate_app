@@ -1098,13 +1098,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Global Handlers
   window.editEstimate = function(id) {
-    const est = estimates.find(e => e._id === id);
-    if (est) openStudioView(est);
+    const est = allEstimates.find(e => e._id === id);
+    if (est) {
+      openStudioView(est);
+    } else {
+      console.error('Invoice record not found for id:', id);
+    }
   };
 
   window.deleteEstimate = async function(id) {
-    const est = estimates.find(e => e._id === id);
-    const confirmName = est ? est.estimateNo : 'this estimate';
+    const est = allEstimates.find(e => e._id === id);
+    const confirmName = est ? est.estimateNo : 'this record';
     if (!confirm(`Are you sure you want to delete ${confirmName}? This action cannot be undone.`)) {
       return;
     }
