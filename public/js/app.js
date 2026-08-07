@@ -124,10 +124,18 @@ document.addEventListener('DOMContentLoaded', () => {
     return (words ? words + ' Rupees' : '') + paiseStr + ' only';
   }
 
-  // 1. Health Check
+  // 1. Health Check with Cold Start Indicator & Keep-Alive
   async function checkHealth() {
+    dbStatusText.textContent = 'Checking server...';
+    
+    // Cold start timer indicator
+    const wakeTimer = setTimeout(() => {
+      dbStatusText.textContent = '⚡ Waking up server (Cold Start ~20s)...';
+    }, 2500);
+
     try {
       const res = await fetch('/api/health');
+      clearTimeout(wakeTimer);
       const data = await res.json();
       if (data.status === 'ok') {
         if (data.dbState === 'connected') {
@@ -139,10 +147,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
     } catch (err) {
+      clearTimeout(wakeTimer);
       dbStatusText.textContent = 'Offline';
       dbStatus.classList.add('disconnected');
     }
   }
+
+  // Client-side keep-alive ping every 8 minutes
+  setInterval(() => {
+    fetch('/api/health').catch(() => {});
+  }, 8 * 60 * 1000);
 
   // 2. Fetch Estimates History
   async function loadEstimates() {

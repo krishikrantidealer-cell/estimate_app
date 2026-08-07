@@ -43,6 +43,19 @@ app.listen(PORT, () => {
   console.log(`🚀 Estimate App Server listening on http://localhost:${PORT}`);
 });
 
+// Self-ping heartbeat every 14 minutes to keep Render free instance awake
+const RENDER_EXTERNAL_URL = process.env.RENDER_EXTERNAL_URL;
+if (RENDER_EXTERNAL_URL) {
+  setInterval(async () => {
+    try {
+      await fetch(`${RENDER_EXTERNAL_URL}/api/health`);
+      console.log('⏰ Self-ping heartbeat executed to keep Render instance awake.');
+    } catch (e) {
+      console.log('Self-ping error:', e.message);
+    }
+  }, 14 * 60 * 1000);
+}
+
 // Connect to MongoDB asynchronously with 5s server selection timeout
 mongoose.connect(MONGODB_URI, {
   serverSelectionTimeoutMS: 5000
