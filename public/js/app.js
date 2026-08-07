@@ -1070,7 +1070,84 @@ document.addEventListener('DOMContentLoaded', () => {
   btnNewEstimate.addEventListener('click', () => openStudioView());
   btnBackToHistory.addEventListener('click', showHistoryView);
   btnSaveDraft.addEventListener('click', saveEstimateFromStudio);
-  btnPrintStudio.addEventListener('click', () => window.print());
+  btnPrintStudio.addEventListener('click', () => {
+    const previewHtml = livePreviewContainer.innerHTML;
+    const estNo = document.getElementById('estimateNo').value.trim() || 'Quotation';
+    
+    // Open dedicated print document window (exact export_helper_web.dart behavior)
+    const printWin = window.open('', '_blank', 'width=950,height=1000');
+    if (printWin) {
+      printWin.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Estimate - ${estNo}</title>
+          <style>
+            @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;800&display=swap');
+            body {
+              font-family: 'Outfit', sans-serif;
+              margin: 0;
+              padding: 30px;
+              color: #111827;
+              background-color: #fff;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
+            .print-toolbar {
+              max-width: 900px;
+              margin: 0 auto 20px auto;
+              background-color: #F3F4F6;
+              padding: 12px 24px;
+              border-radius: 8px;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              border: 1px solid #E5E7EB;
+            }
+            .toolbar-title {
+              font-size: 14px;
+              font-weight: 700;
+              color: #374151;
+            }
+            .print-btn {
+              background-color: #C21820;
+              color: #ffffff;
+              border: none;
+              padding: 8px 16px;
+              font-size: 13px;
+              font-weight: 700;
+              border-radius: 6px;
+              cursor: pointer;
+              font-family: inherit;
+            }
+            @media print {
+              body { padding: 0; }
+              .print-toolbar { display: none !important; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="print-toolbar">
+            <span class="toolbar-title">Document Ready - Click Print to Save as PDF</span>
+            <button class="print-btn" onclick="window.print()">Print / Save PDF</button>
+          </div>
+          ${previewHtml}
+          <script>
+            window.onload = function() {
+              setTimeout(function() {
+                window.print();
+              }, 400);
+            };
+          </script>
+        </body>
+        </html>
+      `);
+      printWin.document.close();
+    } else {
+      window.print();
+    }
+  });
   btnAddItem.addEventListener('click', () => addItemRow());
 
   // Search input debouncing

@@ -552,10 +552,11 @@ body {
 
 .preview-paper-wrapper {
   width: 100%;
-  max-width: 760px;
+  max-width: 920px;
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
   border-radius: 8px;
   overflow: hidden;
+  background: #ffffff;
 }
 
 /* Form Inner Cards & Collapsible Settings */
@@ -758,29 +759,51 @@ input:checked + .slider:before {
 .text-right { text-align: right; }
 .text-center { text-align: center; }
 
-/* Printable A4 Document Styling */
+/* Printable Document Styling */
 .printable-area {
   background: #ffffff;
-  color: #1e293b;
-  padding: 30px;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  color: #111827;
+  padding: 0;
   min-height: 900px;
 }
 
-/* Print Media Overrides */
+/* HIGH-PRECISION PRINT STYLES */
 @media print {
-  body * {
-    visibility: hidden;
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
-  .printable-area, .printable-area * {
-    visibility: visible;
+
+  .app-container,
+  .app-header,
+  .main-content,
+  .studio-navbar,
+  .studio-editor-panel {
+    display: none !important;
   }
-  .printable-area {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    padding: 0;
-    box-shadow: none;
+
+  .studio-view,
+  .studio-grid,
+  .studio-preview-panel,
+  .preview-paper-wrapper,
+  .printable-area,
+  #livePreviewContainer,
+  .quotation-container-exact {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: #ffffff !important;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 }
