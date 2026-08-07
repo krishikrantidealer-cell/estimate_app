@@ -413,8 +413,8 @@ document.addEventListener('DOMContentLoaded', () => {
         <!-- Meta Section & Dark Navy Wave -->
         <div class="meta-section" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; position: relative; height: 140px;">
           <div class="company-info-wave" style="background-color: #1A2536; color: #ffffff; padding: 50px 40px 12px 24px; border-radius: 0 0 100px 0; margin-left: -30px; width: 60%; box-sizing: border-box; position: relative;">
-            <div class="logo-box" style="position: absolute; top: 10px; left: 24px; display: flex; align-items: center; justify-content: center; width: 100px; height: 50px; z-index: 10;">
-              <span class="logo-text" style="color: #C21820; font-weight: 800; font-size: 22px; letter-spacing: 0.5px;">EBS</span>
+            <div class="logo-box" style="position: absolute; top: 10px; left: 24px; display: flex; align-items: center; justify-content: center; width: 110px; height: 60px; z-index: 10;">
+              <img src="assets/images/logo_copy.png" class="logo-img" alt="Logo" style="max-height: 55px; max-width: 100%; object-fit: contain;" onerror="this.outerHTML='<span class=\'logo-text\' style=\'color: #C21820; font-weight: 800; font-size: 22px;\'>EBS</span>'" />
             </div>
             <h1 style="margin: 0 0 4px 0; font-size: 18px; font-weight: 700; color: #ffffff;">${companyName}</h1>
             ${isGstOn ? `<p style="margin: 2px 0; font-size: 11px; color: #E2E8F0; opacity: 0.9;">GSTIN: ${companyGst}</p>` : ''}
@@ -505,10 +505,8 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="sign-box" style="text-align: left; width: auto;"></div>
           <div class="sign-box" style="text-align: center; width: 220px;">
             <p style="margin: 0; font-size: 12px; color: #374151;">For : ${companyName}</p>
-            <div class="stamp-area" style="height: 80px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px;">
-              <div style="width: 75px; height: 75px; border: 2px dashed rgba(60, 50, 160, 0.4); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: rgba(60, 50, 160, 0.5); font-size: 8px; font-weight: 700; text-transform: uppercase; transform: rotate(-10deg);">
-                SEAL<span style="font-size: 12px; font-weight: 800;">STAMP</span>
-              </div>
+            <div class="stamp-area" style="height: 90px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
+              <img src="assets/images/sign.png" alt="Official Seal" style="width: 180px; height: auto; max-width: 200px; object-fit: contain;" onerror="this.outerHTML='<div style=\'width: 75px; height: 75px; border: 2px dashed rgba(60, 50, 160, 0.4); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: rgba(60, 50, 160, 0.5); font-size: 8px; font-weight: 700;\'>SEAL<span style=\'font-size: 12px; font-weight: 800;\'>STAMP</span></div>'" />
             </div>
             <div class="signatory-label" style="padding-top: 6px; font-size: 12px; font-weight: 700; color: #111827; text-transform: uppercase; letter-spacing: 0.5px;">Authorized Signatory</div>
           </div>
